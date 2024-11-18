@@ -44,6 +44,24 @@ const Popup = () => {
     }
   };
 
+  //testExplain
+  const testExplain = async () => {
+    console.log("request testing")
+    try {
+      const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
+      const response = await fetch('http://localhost:3030/api/task/task3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
 
   return (
     <div className="App">
@@ -60,14 +78,15 @@ const Popup = () => {
         >
           Learn React!
         </a>
-        {/* 新增按钮，用于获取后端数据 */}
         <button onClick={testSummary} className="fetch-button">
           test Summary
         </button>
         <button onClick={testRequest} className="fetch-button">
           test Request
         </button>
-        {/* 显示从后端获取的数据 */}
+        <button onClick={testExplain} className="fetch-button">
+          test Explain
+        </button>
         {data && <p>Server Response: {data}</p>}
       </header>
     </div>

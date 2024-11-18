@@ -9,8 +9,17 @@ const Popup = () => {
 
   // example click handler to fetch data from server
   const fetchData = async () => {
+    console.log("123456789")
     try {
-      const response = await fetch('http://localhost:3030/api/server-running'); 
+      //const response = await fetch('http://localhost:3030/api/task/task1');
+      const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
+      const response = await fetch('http://localhost:3030/api/task/task1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
       const result = await response.json(); 
       setData(result.message); 
     } catch (error) {

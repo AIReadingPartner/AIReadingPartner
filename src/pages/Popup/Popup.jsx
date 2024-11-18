@@ -10,7 +10,7 @@ const Popup = () => {
   // example click handler to fetch data from server
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/server-running'); 
+      const response = await fetch('http://localhost:3030/api/server-running'); 
       const result = await response.json(); 
       setData(result.message); 
     } catch (error) {

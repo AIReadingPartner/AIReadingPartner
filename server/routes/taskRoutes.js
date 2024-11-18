@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const task1Controller = require('../controllers/pageSummary');
-const task2Controller = require('../controllers/task2Controller');
+const task2Controller = require('../controllers/customizedRequest');
 const task3Controller = require('../controllers/task3Controller');
 
 router.post('/task1', task1Controller.processTask1);

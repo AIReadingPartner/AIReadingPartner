@@ -5,12 +5,11 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 exports.processTask1 = async (req, res) => {
     try {
-        // Sample request values (replace these with req.body values if needed)
         const userId = "1";
         const type = "summary";
         const browsingTarget = "I want to know the main point of the news";
-        //const currentWebpage = "Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long. An 11-hour layover sounds very long. However, it goes by very quickly. The plane arrived early in the morning, so nothing was open for the first few hours. (I took a much-needed nap because I couldn’t sleep in the cramped plane seat. More about those seats in an upcoming flight review post.) Then I needed to go through passport control and exit the airport. All of that cut into my layover.";
-        const currentWebpage = "This is a unhealthy news which relates to murder"
+        const currentWebpage = "Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long. An 11-hour layover sounds very long. However, it goes by very quickly. The plane arrived early in the morning, so nothing was open for the first few hours. (I took a much-needed nap because I couldn’t sleep in the cramped plane seat. More about those seats in an upcoming flight review post.) Then I needed to go through passport control and exit the airport. All of that cut into my layover.";
+        //const currentWebpage = "This is a unhealthy news which relates to murder"
         console.log("called successfully");
 
         if (!userId || !browsingTarget || !currentWebpage || !type) {
@@ -19,14 +18,11 @@ exports.processTask1 = async (req, res) => {
 
         const prompt = `Now I’m browsing a webpage with the text "${currentWebpage}" and I want to achieve "${browsingTarget}". Can you tell me if this is a relevant and healthy webpage to engage with? If no, answer with "no"; if yes,don't give me yes but provide a summary directly with less than 50 words.`;
 
-        // Initialize the generative model
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        // Generate content using the Gemini API
         const result = await model.generateContent(prompt);
 
         const responseText = result.response.text();
-        const isNoResponse = /^no(\s+)?$/i.test(responseText);
+        const isNoResponse = /^no(\s+)?$/i.test(responseText.trim());
         const ifValid = !isNoResponse;
         const resultData = {
             userId,

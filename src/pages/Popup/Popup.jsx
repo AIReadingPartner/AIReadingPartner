@@ -25,6 +25,19 @@ const Popup = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const openSidePanel = async () => {
+    const [tab] = await chrome.tabs.query({
+     active: true,
+     lastFocusedWindow: true
+    });
+    const tabId = tab.id;
+    await chrome.sidePanel.open({ tabId });
+    await chrome.sidePanel.setOptions({
+     tabId,
+     path: 'panel.html',
+     enabled: true
+    });
+   };
 
   //testRequest
   const testRequest = async () => {
@@ -87,10 +100,15 @@ const Popup = () => {
         <button onClick={testExplain} className="fetch-button">
           test Explain
         </button>
+        <button onClick={openSidePanel} className="fetch-button">
+          Open Side Panel
+        </button>
+        {/* 显示从后端获取的数据 */}
         {data && <p>Server Response: {data}</p>}
       </header>
     </div>
   );
 };
+
 
 export default Popup;

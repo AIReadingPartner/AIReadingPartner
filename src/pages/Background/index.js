@@ -17,3 +17,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.sidePanel.open({ windowId: tab.windowId });
   }
 });
+
+
+ chrome.action.onClicked.addListener((tab) => {
+    const tabId = tab.id;
+    chrome.sidePanel.open({ tabId });
+    chrome.sidePanel.setOptions({
+    tabId,
+    path: 'panel.html',
+    enabled: true
+    });
+  }
+);

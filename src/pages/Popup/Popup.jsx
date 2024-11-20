@@ -8,15 +8,73 @@ const Popup = () => {
   const [data, setData] = useState(''); 
 
   // example click handler to fetch data from server
-  const fetchData = async () => {
+  const testSummary = async () => {
+    console.log("123456789")
     try {
-      const response = await fetch('http://localhost:3030/api/server-running'); 
-      const result = await response.json(); 
-      setData(result.message); 
+      //const response = await fetch('http://localhost:3030/api/task/task1');
+      const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
+      const response = await fetch('http://localhost:3030/api/task/task1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+  const openSidePanel = async () => {
+    const [tab] = await chrome.tabs.query({
+     active: true,
+     lastFocusedWindow: true
+    });
+    const tabId = tab.id;
+    await chrome.sidePanel.open({ tabId });
+    await chrome.sidePanel.setOptions({
+     tabId,
+     path: 'panel.html',
+     enabled: true
+    });
+   };
+
+  //testRequest
+  const testRequest = async () => {
+    console.log("request testing")
+    try {
+      const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
+      const response = await fetch('http://localhost:3030/api/task/task2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  //testExplain
+  const testExplain = async () => {
+    console.log("request testing")
+    try {
+      const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
+      const response = await fetch('http://localhost:3030/api/task/task3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
 
   return (
     <div className="App">
@@ -33,9 +91,17 @@ const Popup = () => {
         >
           Learn React!
         </a>
-        {/* 新增按钮，用于获取后端数据 */}
-        <button onClick={fetchData} className="fetch-button">
-          Fetch Data from Server
+        <button onClick={testSummary} className="fetch-button">
+          test Summary
+        </button>
+        <button onClick={testRequest} className="fetch-button">
+          test Request
+        </button>
+        <button onClick={testExplain} className="fetch-button">
+          test Explain
+        </button>
+        <button onClick={openSidePanel} className="fetch-button">
+          Open Side Panel
         </button>
         {/* 显示从后端获取的数据 */}
         {data && <p>Server Response: {data}</p>}
@@ -43,5 +109,6 @@ const Popup = () => {
     </div>
   );
 };
+
 
 export default Popup;

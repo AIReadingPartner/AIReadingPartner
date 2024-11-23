@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Panel.css';
 import { Input, Button, Avatar, Card, Space } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import { UpdateSummaryButton } from '../../components/update-summary-button';
 const { TextArea } = Input;
 
 interface Message {
@@ -29,9 +30,10 @@ const Panel: React.FC = () => {
             placeholder="Type your reading goals here..."
             autoSize={{ minRows: 3, maxRows: 5 }}
           />
-          <Button type="primary" disabled={!goal.trim()}>
+          <UpdateSummaryButton goal={goal} />
+          {/* <Button type="primary" disabled={!goal.trim()}>
             Update
-          </Button>
+          </Button> */}
         </div>
       </div>
       <h2>Ask AI about anything</h2>
@@ -45,7 +47,10 @@ const Panel: React.FC = () => {
           >
             <Space align="start">
               {message.type === 'received' && (
-                <Avatar style={{ backgroundColor: '#e05656' }} icon={<UserOutlined />} />
+                <Avatar
+                  style={{ backgroundColor: '#e05656' }}
+                  icon={<UserOutlined />}
+                />
               )}
               <Card
                 size="small"
@@ -60,7 +65,10 @@ const Panel: React.FC = () => {
                 {message.content}
               </Card>
               {message.type === 'sent' && (
-                <Avatar style={{ backgroundColor: '#1890ff' }} icon={<UserOutlined />} />
+                <Avatar
+                  style={{ backgroundColor: '#1890ff' }}
+                  icon={<UserOutlined />}
+                />
               )}
             </Space>
           </div>

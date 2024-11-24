@@ -370,6 +370,50 @@ const Panel: React.FC = () => {
     ]);
   };
 
+  const initPanelbyTabId = async (tabId: string) => {
+    // default page
+    if (tabId === undefined || tabId === '') {
+      // empty message
+      setMessages([]);
+      setGoal('');
+      setMessageInput('');
+      return;
+    } 
+    // call API
+    try {
+      // const response = await fetch(`http://localhost:3030/history/${tabId}`);
+      // const data = await response.json();
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! Status: ${response.status}`);
+      // }
+      setMessages([
+        { type: 'sent', content: tabId },
+      ]);
+      setGoal('test');
+      setMessageInput('test');
+    }
+    catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    const handleMessage = (request: any, sender: any, sendResponse: any) => {
+      if (request.action === 'tabChanged') {
+        console.log('Tab changed:', request.tabId);
+        initPanelbyTabId(request.tabId);
+      }
+      sendResponse({ status: 'Message received' });
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+
+    // Cleanup listener on component unmount
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    };
+  }, []);
+
   return (
     <div className="container">
       <div>

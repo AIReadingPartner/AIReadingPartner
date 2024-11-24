@@ -28,33 +28,31 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
     }
   }, [goal]);
 
-  function extractStructuredText() {
-    const sections: StructuredText[] = []; // Array to hold the structured content
+  //   function extractStructuredText() {
+  //     const sections: StructuredText[] = []; // Array to hold the structured content
 
-    // Query elements that could have meaningful content
-    document
-      .querySelectorAll('section, div, p, article, span')
-      .forEach((element, index) => {
-        const text = (element as HTMLElement).innerText.trim(); // Get visible text content
-        if (text) {
-          sections.push({
-            tag: element.tagName.toLowerCase(),
-            content: text,
-            id: element.id || null,
-            className: element.className || null,
-            index: index,
-          });
-        }
-      });
+  //     // Query elements that could have meaningful content
+  //     document
+  //       .querySelectorAll('section, div, p, article, span')
+  //       .forEach((element, index) => {
+  //         const text = (element as HTMLElement).innerText.trim(); // Get visible text content
+  //         if (text) {
+  //           sections.push({
+  //             tag: element.tagName.toLowerCase(),
+  //             content: text,
+  //             id: element.id || null,
+  //             className: element.className || null,
+  //             index: index,
+  //           });
+  //         }
+  //       });
 
-    return sections; // Return the structured data
-  }
+  //     return sections; // Return the structured data
+  //   }
   const handleUpdateClick = async () => {
     console.log('Update button clicked');
     setUpdateSummary(true);
     setIsButtonDisabled(true);
-    // setFirstStructuredText(extractStructuredText()[0]);
-    // setIsModalVisible(true);
 
     // Send a message to the content script to extract structured text
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -67,8 +65,36 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
               const structuredData = response.structuredData;
               console.log('Structured Data:', structuredData);
               if (structuredData.length > 0) {
-                setFirstStructuredText(structuredData[0]);
+                setFirstStructuredText(structuredData[100]);
                 setIsModalVisible(true);
+
+                // TODO get indexs of highlighted text
+                // here we are assuming that we have highlighted text from index 100 to 120
+                const indexs = Array.from({ length: 20 }, (_, i) => i + 100);
+
+                // highlight text
+                chrome.tabs.query(
+                  { active: true, currentWindow: true },
+                  (tabs) => {
+                    if (tabs[0].id !== undefined) {
+                      chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                          action: 'highlightText',
+                          indexs,
+                          structuredData: structuredData,
+                        },
+                        (response) => {
+                          if (response && response.success) {
+                            console.log('Text highlighted successfully');
+                          } else {
+                            console.error('Error:', response.error);
+                          }
+                        }
+                      );
+                    }
+                  }
+                );
               } else {
                 console.error('Error:', response.error);
               }

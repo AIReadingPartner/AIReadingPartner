@@ -17,29 +17,56 @@ const Panel: React.FC = () => {
     // { type: 'received', content: 'Hi! How can I help you today?' },
     // { type: 'sent', content: 'I have a question about programming.' },
   ]);
+  const [currentTabId, setCurrentTabId] = useState<string>('');
+
+  // get current tab id
+  const getCurrentTabId = async () => {
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0].id !== undefined) {
+        setCurrentTabId(tabs[0].id.toString());
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   // send goal
   const sendGoal = async (goal: string) => {
     // call API
+    let userId = currentTabId;
+
     const requestBody = {
       browingTarget: goal,
       currentWebPage: 'testString',
+      userId: userId,
+      type: 'summary',
     };
     try {
-      // const response = await fetch('http://localhost:3030/summary', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(requestBody),
-      // });
-      // const data = await response.json();
+      const response = await fetch('http://localhost:3030/api/task/task1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await response.json();
+      console.log(data);
 
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // if (data.result.userId !== userId){
+      //   return;
       // }
-      const data = { textBody: 'This is a summary.' };
-      receivedSummary(data.textBody);
+
+      if (!data.result.ifValid) {
+        receivedSummary('Invalid Goal. Please try again.');
+        return;
+      }
+
+      receivedSummary(data.result.textBody);
     } catch (err) {
       console.log(err);
     }
@@ -61,21 +88,19 @@ const Panel: React.FC = () => {
       setGoal('');
       setMessageInput('');
       return;
-    } 
+    }
     // call API
     try {
-      // const response = await fetch(`http://localhost:3030/history/${tabId}`);
+      // const response = await fetch(`http://localhost:3030/api/task/task4/${tabId}`);
       // const data = await response.json();
       // if (!response.ok) {
       //   throw new Error(`HTTP error! Status: ${response.status}`);
       // }
-      setMessages([
-        { type: 'sent', content: tabId },
-      ]);
+      setMessages([{ type: 'sent', content: tabId }]);
       setGoal('test');
       setMessageInput('test');
-    }
-    catch (err) {
+      setCurrentTabId(tabId);
+    } catch (err) {
       console.log(err);
     }
   };
@@ -90,6 +115,9 @@ const Panel: React.FC = () => {
     };
 
     chrome.runtime.onMessage.addListener(handleMessage);
+
+    // Get current tab id
+    getCurrentTabId();
 
     // Cleanup listener on component unmount
     return () => {

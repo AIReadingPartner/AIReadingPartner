@@ -18,6 +18,40 @@ const Panel: React.FC = () => {
     // { type: 'sent', content: 'I have a question about programming.' },
   ]);
 
+  // send goal
+  const sendGoal = async (goal: string) => {
+    // call API
+    const requestBody = {
+      browingTarget: goal,
+      currentWebPage: 'testString',
+    };
+    try {
+      // const response = await fetch('http://localhost:3030/summary', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(requestBody),
+      // });
+      // const data = await response.json();
+
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! Status: ${response.status}`);
+      // }
+      const data = { textBody: 'This is a summary.' };
+      receivedSummary(data.textBody);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // received summary
+  const receivedSummary = async (summary: string) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: 'received', content: summary },
+    ]);
+  };
 
   return (
     <div className="container">
@@ -30,7 +64,11 @@ const Panel: React.FC = () => {
             placeholder="Let's start browsing! Please let me know your goal."
             autoSize={{ minRows: 3, maxRows: 5 }}
           />
-          <Button type="primary" disabled={!goal.trim()}>
+          <Button
+            type="primary"
+            disabled={!goal.trim()}
+            onClick={() => sendGoal(goal)}
+          >
             Update
           </Button>
         </div>

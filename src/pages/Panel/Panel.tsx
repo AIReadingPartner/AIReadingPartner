@@ -335,6 +335,41 @@ const Panel: React.FC = () => {
     };
   }, []);
 
+  // send goal
+  const sendGoal = async (goal: string) => {
+    // call API
+    const requestBody = {
+      browingTarget: goal,
+      currentWebPage: 'testString',
+    };
+    try {
+      // const response = await fetch('http://localhost:3030/summary', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(requestBody),
+      // });
+      // const data = await response.json();
+
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! Status: ${response.status}`);
+      // }
+      const data = { textBody: 'This is a summary.' };
+      receivedSummary(data.textBody);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // received summary
+  const receivedSummary = async (summary: string) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: 'received', content: summary },
+    ]);
+  };
+
   return (
     <div className="container">
       <div>

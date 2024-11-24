@@ -1,4 +1,4 @@
-import { Button, Tooltip, Modal } from 'antd';
+import { Button, Tooltip } from 'antd';
 import React, { useState, useEffect } from 'react';
 
 interface UpdateSummaryButtonProps {
@@ -18,9 +18,6 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
 }) => {
   const [updateSummary, setUpdateSummary] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [firstStructuredText, setFirstStructuredText] =
-    useState<StructuredText | null>(null);
 
   useEffect(() => {
     if (goal.trim()) {
@@ -28,27 +25,6 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
     }
   }, [goal]);
 
-  //   function extractStructuredText() {
-  //     const sections: StructuredText[] = []; // Array to hold the structured content
-
-  //     // Query elements that could have meaningful content
-  //     document
-  //       .querySelectorAll('section, div, p, article, span')
-  //       .forEach((element, index) => {
-  //         const text = (element as HTMLElement).innerText.trim(); // Get visible text content
-  //         if (text) {
-  //           sections.push({
-  //             tag: element.tagName.toLowerCase(),
-  //             content: text,
-  //             id: element.id || null,
-  //             className: element.className || null,
-  //             index: index,
-  //           });
-  //         }
-  //       });
-
-  //     return sections; // Return the structured data
-  //   }
   const handleUpdateClick = async () => {
     console.log('Update button clicked');
     setUpdateSummary(true);
@@ -65,12 +41,9 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
               const structuredData = response.structuredData;
               console.log('Structured Data:', structuredData);
               if (structuredData.length > 0) {
-                setFirstStructuredText(structuredData[100]);
-                setIsModalVisible(true);
-
                 // TODO get indexs of highlighted text
                 // here we are assuming that we have highlighted text from index 100 to 120
-                const indexs = Array.from({ length: 20 }, (_, i) => i + 100);
+                const indexs = Array.from({ length: 50 }, (_, i) => i + 800);
 
                 // highlight text
                 chrome.tabs.query(
@@ -105,14 +78,6 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
     });
   };
 
-  const handleModalOk = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
-
   return (
     <>
       <Tooltip title="Update reading goal, and highlight all necessary contents in the current page.">
@@ -124,32 +89,6 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
           Update
         </Button>
       </Tooltip>
-      <Modal
-        title="First Structured Text"
-        visible={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
-      >
-        {firstStructuredText && (
-          <div>
-            <p>
-              <strong>Tag:</strong> {firstStructuredText.tag}
-            </p>
-            <p>
-              <strong>Content:</strong> {firstStructuredText.content}
-            </p>
-            <p>
-              <strong>ID:</strong> {firstStructuredText.id}
-            </p>
-            <p>
-              <strong>Class Name:</strong> {firstStructuredText.className}
-            </p>
-            <p>
-              <strong>Index:</strong> {firstStructuredText.index}
-            </p>
-          </div>
-        )}
-      </Modal>
     </>
   );
 };

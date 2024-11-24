@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.error('Error extracting structured text:', error);
       sendResponse({ error: error.message });
     }
-    return true; // Indicates that the response will be sent asynchronously
+    return true;
   }
 });
 
@@ -21,13 +21,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Message received in content script:', request);
   if (request.action === "highlightText") {
     try {
-      highlightText(request.index, request.structuredData);
+      highlightText(request.indexs, request.structuredData);
       sendResponse({ success: true });
     } catch (error) {
       console.error('Error highlighting text:', error);
       sendResponse({ error: error.message });
     }
-    return true; // Indicates that the response will be sent asynchronously
+    return true;
   }
 });
 

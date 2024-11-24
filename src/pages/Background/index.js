@@ -21,11 +21,46 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
  chrome.action.onClicked.addListener((tab) => {
     const tabId = tab.id;
-    chrome.sidePanel.open({ tabId });
     chrome.sidePanel.setOptions({
     tabId,
     path: 'panel.html',
     enabled: true
     });
+    chrome.sidePanel.open({ tabId });
   }
 );
+
+
+// Handle change of active tab
+chrome.tabs.onActivated.addListener((activeInfo) => {
+    chrome.sidePanel.getOptions({ tabId: activeInfo.tabId }, (options) => {
+      if (options && options.enabled) {
+        chrome.sidePanel.setOptions({
+          tabId: activeInfo.tabId
+        });
+        try {
+          chrome.runtime.sendMessage({ action: 'tabChanged', tabId: activeInfo.tabId });
+        } catch (e) {
+          console.log('Error:', e);
+        }
+      }
+    });
+});
+
+// Handle tab updates / refresh
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    chrome.sidePanel.getOptions({ tabId: tabId }, (options) => {
+      if (options && options.enabled) {
+        chrome.sidePanel.setOptions({
+          tabId: tabId,
+        });
+        try {
+          chrome.runtime.sendMessage({ action: 'tabChanged', tabId: tabId });
+        } catch (e) {
+          console.log('Error:', e);
+      }
+    }
+    });
+  }
+});

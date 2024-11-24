@@ -26,7 +26,8 @@
   ],
   "permissions": [
     "contextMenus",
-    "sidePanel"
+    "sidePanel",
+    "tabs"
   ],
   "side_panel": {
     "default_path": "panel.html"

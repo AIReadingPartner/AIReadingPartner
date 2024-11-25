@@ -105,6 +105,55 @@ const Panel: React.FC = () => {
     }
   };
 
+  // Add new function to send custom request
+  const sendCustomRequest = async (customRequest: string) => {
+    // First add the user's message to the queue
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { type: 'sent', content: customRequest },
+    ]);
+
+    // Clear input after sending
+    setMessageInput('');
+
+    // Call API
+    const requestBody = {
+      browsingTarget: goal,
+      currentWebpage: 'testString', // You might want to get the actual webpage content
+      userId: currentTabId,
+      customizedRequest: customRequest,
+    };
+
+    try {
+      const response = await fetch('http://localhost:3030/api/task/task2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // Add AI's response to the message queue
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: 'received', content: data.result.textBody },
+      ]);
+    } catch (err) {
+      console.log(err);
+      // Optionally add error message to the queue
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { type: 'received', content: 'Sorry, there was an error processing your request.' },
+      ]);
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (request: any, sender: any, sendResponse: any) => {
       if (request.action === 'tabChanged') {
@@ -145,7 +194,7 @@ const Panel: React.FC = () => {
           </Button>
         </div>
       </div>
-      {messages.length > 0 && <h2>Ask AI about anything</h2>}
+      {messages.length > 0 && <h2>Ask Gemini</h2>}
       {messages.length > 0 && (
         <div className="messages-container">
           {messages.map((message, index) => (
@@ -196,7 +245,11 @@ const Panel: React.FC = () => {
               placeholder="Message Gemini"
               autoSize={{ minRows: 4, maxRows: 5 }}
             />
-            <Button type="primary" disabled={!messageInput.trim()}>
+            <Button 
+              type="primary" 
+              disabled={!messageInput.trim()}
+              onClick={() => sendCustomRequest(messageInput)}
+            >
               Send
             </Button>
           </div>

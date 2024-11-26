@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const GeminiReq = require("../models/geminiReq");
 const GEMINI_KEY = process.env.GEMINI_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
@@ -53,10 +54,25 @@ exports.processTask2 = async (req, res) => {
             ifValid,
         };
 
-        console.log(resultData);
-        res.json({ message: 'Task 2 processed successfully', result: resultData });
+        const geminiRequest = new GeminiReq({
+            userId,
+            type,
+            browsingTarget,
+            currentWebpage,
+            customizedRequest,
+            result: responseText.trim(),
+            ifValid,
+        });
+
+        await geminiRequest.save();
+        console.log("db saved: " + geminiRequest)
+
+        res.json({
+            message: 'Customized request processed successfully and data stored in MongoDB',
+            data: geminiRequest,
+        });
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Error processing Task 2', error: error.message });
+        res.status(500).json({ message: 'Error processing customized request', error: error.message });
     }
 };

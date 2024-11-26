@@ -4,7 +4,7 @@ const GEMINI_KEY = process.env.GEMINI_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
-exports.processTask2 = async (req, res) => {
+exports.customizedReq = async (req, res) => {
     try {
         // const userId = req.body.userId || "1"; // Default to "1" if not provided
         // const type = "request"; // Set the type for this task
@@ -46,14 +46,6 @@ exports.processTask2 = async (req, res) => {
 
         const isNoResponse = /^no(\s+)?$/i.test(responseText.trim());
         const ifValid = !isNoResponse;
-
-        const resultData = {
-            userId,
-            type,
-            textBody: responseText,
-            ifValid,
-        };
-
         const geminiRequest = new GeminiReq({
             userId,
             type,

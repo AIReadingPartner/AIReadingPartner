@@ -1,9 +1,10 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const GeminiReq = require("../models/geminiReq");
 const GEMINI_KEY = process.env.GEMINI_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
-exports.processTask1 = async (req, res) => {
+exports.pageSummarize = async (req, res) => {
     try {
         const userId = "1";
         const type = "summary";
@@ -24,17 +25,26 @@ exports.processTask1 = async (req, res) => {
         const responseText = result.response.text();
         const isNoResponse = /^no(\s+)?$/i.test(responseText.trim());
         const ifValid = !isNoResponse;
-        const resultData = {
+
+        const geminiRequest = new GeminiReq({
             userId,
             type,
-            textBody: responseText,
+            browsingTarget,
+            currentWebpage,
+            result: responseText.trim(),
             ifValid,
-        };
+        });
 
-        console.log(resultData);
-        res.json({ message: 'Task 1 processed successfully', result: resultData });
+        await geminiRequest.save();
+        console.log("db saved: " + geminiRequest)
+
+
+        res.json({
+            message: 'Page Summary processed successfully and data stored in MongoDB',
+            data: geminiRequest,
+        });
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Error processing Task 1', error: error.message });
+        res.status(500).json({ message: 'Error processing Page Summary', error: error.message });
     }
 };

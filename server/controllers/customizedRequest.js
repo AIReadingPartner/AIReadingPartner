@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const ReqHistory = require("../models/reqHistory");
 const GeminiReq = require("../models/geminiReq");
 const GEMINI_KEY = process.env.GEMINI_KEY;
 
@@ -6,65 +7,107 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 exports.customizedReq = async (req, res) => {
     try {
-        // const userId = req.body.userId || "1"; // Default to "1" if not provided
-        // const type = "request"; // Set the type for this task
-        // const browsingTarget = req.body.browsingTarget;
-        // const currentWebpage = req.body.currentWebpage;
-        // const customizedRequest = req.body.customizedRequest;
+        console.log("Starting customizedReq method...");
+
         const userId = "1";
+        console.log(`User ID: ${userId}`);
+
         const type = "request";
+        console.log(`Type: ${type}`);
+
         const browsingTarget = "I want to know the main point of the news";
-        const currentWebpage = "Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long. An 11-hour layover sounds very long. However, it goes by very quickly. The plane arrived early in the morning, so nothing was open for the first few hours. (I took a much-needed nap because I couldn’t sleep in the cramped plane seat. More about those seats in an upcoming flight review post.) Then I needed to go through passport control and exit the airport. All of that cut into my layover.";
-        //const currentWebpage = "This is a unhealthy news which relates to murder"
+        console.log(`Browsing Target: ${browsingTarget}`);
+
+        const currentWebpage = `Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long...`;
+        console.log(`Current Webpage: ${currentWebpage}`);
+
         const customizedRequest = "which city is the news talking about";
-        console.log("Task 2 called successfully");
+        console.log(`Customized Request: ${customizedRequest}`);
 
         if (!userId || !browsingTarget || !currentWebpage || !customizedRequest) {
-            return res.status(400).json({ message: 'Missing required fields in request body' });
+            console.error("Missing required fields in the request.");
+            return res.status(400).json({ message: "Missing required fields in request body" });
         }
 
         const prompt = `Now I’m browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And I want to ask "${customizedRequest}". Can you tell me if the webpage and request are relevant and healthy that can be dealt with? If no, answer with only "no"; if yes, provide only an answer directly to "${customizedRequest}" with less than 100 words.`;
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        console.log(`Generated Prompt: ${prompt}`);
 
-        //TBD in future to store the history
-        const chat = model.startChat({
-            history: [
+        console.log("Fetching request history for user...");
+        let historyEntry = await ReqHistory.findOne({ userId });
+        console.log("Fetched History Entry:", historyEntry);
+
+        let modelHistory = [];
+        if (historyEntry) {
+            console.log("History exists for user. Parsing history...");
+            modelHistory = JSON.parse(historyEntry.requestHistory);
+        } else {
+            console.log("No history found for user. Initializing new history...");
+            modelHistory = [
                 {
                     role: "user",
-                    parts: [{ text: "Hello" }],
+                    parts: [{ text: `Hello, Now I’m browsing a webpage and my browsing target is "${browsingTarget}"` }],
                 },
                 {
                     role: "model",
                     parts: [{ text: "Great to meet you. What would you like to know?" }],
                 },
-            ],
-        });
+            ];
+        }
+        console.log("Model History before request:", modelHistory);
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        console.log("Initialized generative model.");
+
+        const chat = model.startChat({ history: modelHistory });
+        console.log("Started chat with model. Sending prompt...");
 
         const result = await chat.sendMessage(prompt);
-        const responseText = result.response.text();
-        console.log("Raw response:", responseText);
+        const responseText = result.response.text().trim();
+        console.log("Raw response from model:", responseText);
+        console.log("Model History after adding model response:", modelHistory);
 
-        const isNoResponse = /^no(\s+)?$/i.test(responseText.trim());
+        if (historyEntry) {
+            console.log("Updating existing history entry in database...");
+            historyEntry.requestHistory = JSON.stringify(modelHistory);
+            historyEntry.updatedAt = new Date();
+            await historyEntry.save();
+            console.log("History entry updated successfully.");
+        } else {
+            console.log("Creating new history entry in database...");
+            historyEntry = new ReqHistory({
+                userId,
+                requestHistory: JSON.stringify(modelHistory),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+            await historyEntry.save();
+            console.log("New history entry created successfully.");
+        }
+
+        const isNoResponse = /^no(\s+)?$/i.test(responseText);
         const ifValid = !isNoResponse;
+        console.log(`Response validity check: isValid = ${ifValid}`);
+
+        console.log("Saving GeminiReq entry...");
         const geminiRequest = new GeminiReq({
             userId,
             type,
             browsingTarget,
             currentWebpage,
             customizedRequest,
-            result: responseText.trim(),
+            result: responseText,
             ifValid,
         });
-
         await geminiRequest.save();
-        console.log("db saved: " + geminiRequest)
+        console.log("GeminiReq entry saved successfully.");
 
         res.json({
-            message: 'Customized request processed successfully and data stored in MongoDB',
-            data: geminiRequest,
+            message: "Customized request processed successfully",
+            response: responseText,
+            history: modelHistory,
         });
     } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: 'Error processing customized request', error: error.message });
+        console.error("Error occurred while processing request:", error);
+        res.status(500).json({ message: "Error processing customized request", error: error.message });
     }
 };

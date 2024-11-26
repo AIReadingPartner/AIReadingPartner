@@ -3,7 +3,7 @@ export const extractStructuredText = () => {
   let indexCounter = 0; // Counter to assign unique index numbers
 
   const extractTextFromElement = (element) => {
-    const text = element.innerText.trim(); // Get visible text content
+    const text = element.innerText ? element.innerText.trim() : ''; // Get visible text content
     if (text) {
       sections.push({
         tag: element.tagName.toLowerCase(),
@@ -25,5 +25,6 @@ export const extractStructuredText = () => {
     extractTextFromElement(element);
   });
 
+  console.log('Extracted Structured Text:', sections);
   return sections; // Return the structured data
 };

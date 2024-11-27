@@ -6,10 +6,10 @@ const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 exports.pageSummarize = async (req, res) => {
     try {
-        const userId = "1";
+        const userId = req.body.userId || "1";
         const type = "summary";
-        const browsingTarget = "I want to know the main point of the news";
-        const currentWebpage = "Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long. An 11-hour layover sounds very long. However, it goes by very quickly. The plane arrived early in the morning, so nothing was open for the first few hours. (I took a much-needed nap because I couldn’t sleep in the cramped plane seat. More about those seats in an upcoming flight review post.) Then I needed to go through passport control and exit the airport. All of that cut into my layover.";
+        const browsingTarget = req.body.browsingTarget || "I want to know the main point of the news";
+        const currentWebpage = req.body.currentWebpage || "Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long. An 11-hour layover sounds very long. However, it goes by very quickly. The plane arrived early in the morning, so nothing was open for the first few hours. (I took a much-needed nap because I couldn’t sleep in the cramped plane seat. More about those seats in an upcoming flight review post.) Then I needed to go through passport control and exit the airport. All of that cut into my layover.";
         //const currentWebpage = "This is a unhealthy news which relates to murder"
         console.log("Task 1 called successfully");
 

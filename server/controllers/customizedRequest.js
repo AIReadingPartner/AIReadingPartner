@@ -9,19 +9,19 @@ exports.customizedReq = async (req, res) => {
     try {
         console.log("Starting customizedReq method...");
 
-        const userId = "1";
+        const userId = req.body.userId || "1";
         console.log(`User ID: ${userId}`);
 
         const type = "request";
         console.log(`Type: ${type}`);
 
-        const browsingTarget = "I want to know the main point of the news";
+        const browsingTarget = req.body.browsingTarget || "I want to know the main point of the news";
         console.log(`Browsing Target: ${browsingTarget}`);
 
-        const currentWebpage = `Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long...`;
+        const currentWebpage = req.body.currentWebpage || `Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long...`;
         console.log(`Current Webpage: ${currentWebpage}`);
 
-        const customizedRequest = "which city is the news talking about";
+        const customizedRequest = req.body.customizedRequest || "which city is the news talking about";
         console.log(`Customized Request: ${customizedRequest}`);
 
         if (!userId || !browsingTarget || !currentWebpage || !customizedRequest) {

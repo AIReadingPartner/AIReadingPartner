@@ -67,10 +67,15 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
         const structuredData = response.structuredData;
         console.log('Response: ', response);
         console.log('Structured Data:', structuredData);
+        // a string containing all the content of the page
+        const contents = structuredData
+          .map((data: StructuredText) => data.content)
+          .join(' ');
+        console.log('Contents:', contents);
         if (structuredData.length > 0) {
           // TODO get indexes of highlighted text based on the goal
           // here goal is undefined, currently set as "understand the page".
-          const readingGoal = "understand the page";
+          const readingGoal = 'understand the page';
           const indexes = await fetch('http://localhost:3030/api/task/task4', {
             method: 'POST',
             headers: {
@@ -78,10 +83,10 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
             },
             body: JSON.stringify({
               browsingTarget: readingGoal,
-              structuredData: structuredData
+              structuredData: structuredData,
             }),
           });
-          
+
           console.log('Indexes:', indexes);
 
           const highlightResponse = await sendMessageToTab(activeTab.id!, {

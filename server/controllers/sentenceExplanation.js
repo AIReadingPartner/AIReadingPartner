@@ -1,9 +1,10 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const GeminiReq = require("../models/geminiReq");
 const GEMINI_KEY = process.env.GEMINI_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
-exports.processTask3 = async (req, res) => {
+exports.sentenceExplain = async (req, res) => {
     try {
         // const userId = req.body.userId || "1";
         // const type = "explanation";
@@ -31,17 +32,25 @@ exports.processTask3 = async (req, res) => {
         const isNoResponse = /^no(\s+)?$/i.test(responseText.trim());
         const ifValid = !isNoResponse;
 
-        const resultData = {
+        const geminiRequest = new GeminiReq({
             userId,
             type,
-            textBody: responseText,
+            browsingTarget,
+            currentWebpage,
+            result: responseText.trim(),
             ifValid,
-        };
+        });
 
-        console.log(resultData);
-        res.json({ message: 'Task 3 processed successfully', result: resultData });
+        await geminiRequest.save();
+        console.log("db saved: " + geminiRequest)
+
+
+        res.json({
+            message: 'Sentence explanation processed successfully and data stored in MongoDB',
+            data: geminiRequest,
+        });
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Error processing Task 3', error: error.message });
+        res.status(500).json({ message: 'Error processing Sentence explanation', error: error.message });
     }
 };

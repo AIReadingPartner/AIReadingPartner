@@ -9,11 +9,10 @@ const Popup = () => {
 
   // example click handler to fetch data from server
   const testSummary = async () => {
-    console.log("123456789")
     try {
       //const response = await fetch('http://localhost:3030/api/task/task1');
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/task1', {
+      const response = await fetch('http://localhost:3030/api/task/pageSummarize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +43,7 @@ const Popup = () => {
     console.log("request testing")
     try {
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/task2', {
+      const response = await fetch('http://localhost:3030/api/task/customizedReq', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +61,7 @@ const Popup = () => {
     console.log("request testing")
     try {
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/task3', {
+      const response = await fetch('http://localhost:3030/api/task/sentenceExplain', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,6 +69,23 @@ const Popup = () => {
         body: JSON.stringify(data),
       });
       const result = await response.json();
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  //testGetAll
+  const testGetAllHistory = async () => {
+    console.log("GetAllHistory testing")
+    try {
+      const response = await fetch('http://localhost:3030/api/crud//hisdata/1', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      console.log(result)
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -99,6 +115,9 @@ const Popup = () => {
         </button>
         <button onClick={testExplain} className="fetch-button">
           test Explain
+        </button>
+        <button onClick={testGetAllHistory} className="fetch-button">
+          test Get All
         </button>
         <button onClick={openSidePanel} className="fetch-button">
           Open Side Panel

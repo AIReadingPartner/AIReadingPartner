@@ -34,8 +34,9 @@ export const extractStructuredText = () => {
     const text = element.innerText ? element.innerText.trim() : ''; // Get visible text content
     // Check if the text contains any word characters (letters or digits) and meets minimum length
     const hasWords = /\w/.test(text);
-    const minLength = 2; // Minimum length of text to be included
-    if (text && hasWords && text.length >= minLength) {
+    const minLength = 5; // Minimum length of text to be included
+    const wordCount = text.split(/\s+/).length; // Count the number of words
+    if (text && hasWords && text.length >= minLength && wordCount > 1) {
       sections.push({
         tag: element.tagName.toLowerCase(),
         content: text,

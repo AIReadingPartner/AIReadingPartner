@@ -85,3 +85,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     });
   }
 });
+
+
+ chrome.action.onClicked.addListener((tab) => {
+    const tabId = tab.id;
+    chrome.sidePanel.open({ tabId });
+    chrome.sidePanel.setOptions({
+    tabId,
+    path: 'panel.html',
+    enabled: true
+    });
+  }
+);

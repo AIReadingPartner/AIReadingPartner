@@ -71,9 +71,9 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
         const contents = structuredData
           .map((data: StructuredText) => data.content)
           .join(' ');
-        console.log('Contents:', contents);
+        // console.log('Contents:', contents);
         if (structuredData.length > 0) {
-          const backendResponse = await fetch('http://localhost:3030/api/task/task4', {
+          const backendResponse = await fetch('http://localhost:3030/api/task/highlightSentence', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
           const highlightResponse = await sendMessageToTab(activeTab.id!, {
             action: 'highlightText',
             indexes: indexes,
-            structuredData,
+            structuredData
           });
 
           if (highlightResponse && highlightResponse.success) {

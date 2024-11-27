@@ -4,7 +4,9 @@ export const extractStructuredText = () => {
 
   const extractTextFromElement = (element) => {
     const text = element.innerText ? element.innerText.trim() : ''; // Get visible text content
-    if (text) {
+    // Check if the text contains any word characters (letters or digits)
+    const hasWords = /\w/.test(text);
+    if (text && hasWords) {
       sections.push({
         tag: element.tagName.toLowerCase(),
         content: text,

@@ -3,7 +3,7 @@ const GEMINI_KEY = process.env.GEMINI_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
-exports.processTask4 = async (req, res) => {
+exports.highlightSentence = async (req, res) => {
   try {
     // Extract request parameters
     const browsingTarget = req.body.browsingTarget || "I want to know the main point of the news";

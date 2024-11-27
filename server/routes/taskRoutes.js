@@ -9,5 +9,6 @@ const task4Controller = require('../controllers/highlightSentence');
 router.post('/pageSummarize', task1Controller.pageSummarize);
 router.post('/customizedReq', task2Controller.customizedReq);
 router.post('/sentenceExplain', task3Controller.sentenceExplain);
+router.post('/highlightSentence', task4Controller.highlightSentence);
 
 module.exports = router;

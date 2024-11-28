@@ -10,11 +10,31 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// Get Session Id
+const getSessionId = () => {
+  try {
+    chrome.storage.local.get('sessionId', (result) => {
+      if (!result.sessionId) {
+        const uuid = crypto.randomUUID();
+        chrome.storage.local.set({ sessionId: uuid });
+      }
+    });
+  } catch (e) {
+    const uuid = crypto.randomUUID();
+    chrome.storage.local.set({ sessionId: uuid });
+  }
+
+  chrome.storage.local.get('sessionId', (result) => {
+    console.log('Session ID:', result.sessionId);
+  });
+}
+
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'openSidePanel') {
     // Open the side panel
     chrome.sidePanel.open({ windowId: tab.windowId });
+    getSessionId();
   }
 });
 
@@ -27,6 +47,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     enabled: true
     });
     chrome.sidePanel.open({ tabId });
+    getSessionId();
   }
 );
 

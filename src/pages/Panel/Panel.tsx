@@ -90,6 +90,29 @@ const Panel: React.FC = () => {
     }
   };
 
+  // New helper function to extract webpage content
+  const extractWebpageContent = async (): Promise<string> => {
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab.id || tab.url?.startsWith('chrome://')) {
+        return 'This page cannot be analyzed. Please navigate to a regular webpage.';
+      }
+
+      const result = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: extractStructuredText,
+      });
+      return result[0].result;
+    } catch (err) {
+      console.error('Error extracting webpage content:', err);
+      return 'An error occurred while analyzing the page.';
+    }
+  };
+
   // send goal
   const sendGoal = async (goal: string) => {
     // highlight the text
@@ -306,31 +329,34 @@ const Panel: React.FC = () => {
 
   // Add new function to send custom request
   const sendCustomRequest = async (customRequest: string) => {
-    // First add the user's message to the queue
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: 'sent', content: customRequest },
     ]);
 
-    // Clear input after sending
     setMessageInput('');
 
-    // Call API
-    const requestBody = {
-      browsingTarget: goal,
-      currentWebpage: 'testString', // You might want to get the actual webpage content
-      userId: currentTabId,
-      customizedRequest: customRequest,
-    };
-
     try {
-      const response = await fetch('http://localhost:3030/api/task/task2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const currentWebPage = await extractWebpageContent();
+
+      const requestBody = {
+        userId: currentTabId,
+        type: 'request',
+        browsingTarget: goal,
+        currentWebpage: currentWebPage,
+        customizedRequest: customRequest,
+      };
+
+      const response = await fetch(
+        'http://localhost:3030/api/task/customizedReq',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
 
@@ -338,14 +364,17 @@ const Panel: React.FC = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      // Add AI's response to the message queue
+      const data = await response.json();
+
       setMessages((prevMessages) => [
         ...prevMessages,
-        { type: 'received', content: data.result.textBody },
+        {
+          type: 'received',
+          content: data.response || 'No response available.',
+        },
       ]);
     } catch (err) {
-      console.log(err);
-      // Optionally add error message to the queue
+      console.error('Error in sendCustomRequest:', err);
       setMessages((prevMessages) => [
         ...prevMessages,
         {

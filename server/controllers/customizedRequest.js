@@ -9,24 +9,26 @@ exports.customizedReq = async (req, res) => {
     try {
         console.log("Starting customizedReq method...");
 
-        const userId = "1";
-        console.log(`User ID: ${userId}`);
+        // Validate request body
+        const { userId, browsingTarget, currentWebpage, customizedRequest } = req.body;
+        const type = req.body.type || "request"; // Default to "request" if not provided
 
-        const type = "request";
-        console.log(`Type: ${type}`);
+        // Log received data
+        console.log("Received request data:", {
+            userId,
+            type,
+            browsingTarget,
+            currentWebpage,
+            customizedRequest
+        });
 
-        const browsingTarget = "I want to know the main point of the news";
-        console.log(`Browsing Target: ${browsingTarget}`);
-
-        const currentWebpage = `Let’s learn how to spend a long layover in Zurich, Switzerland. My first layover was 11 hours long...`;
-        console.log(`Current Webpage: ${currentWebpage}`);
-
-        const customizedRequest = "which city is the news talking about";
-        console.log(`Customized Request: ${customizedRequest}`);
-
+        // Validate required fields
         if (!userId || !browsingTarget || !currentWebpage || !customizedRequest) {
             console.error("Missing required fields in the request.");
-            return res.status(400).json({ message: "Missing required fields in request body" });
+            return res.status(400).json({ 
+                message: "Missing required fields", 
+                required: ["userId", "browsingTarget", "currentWebpage", "customizedRequest"] 
+            });
         }
 
         const prompt = `Now I’m browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And I want to ask "${customizedRequest}". Can you tell me if the webpage and request are relevant and healthy that can be dealt with? If no, answer with only "no"; if yes, provide only an answer directly to "${customizedRequest}" with less than 100 words.`;

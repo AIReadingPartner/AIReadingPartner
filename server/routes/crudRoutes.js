@@ -8,4 +8,6 @@ router.get('/data/:id', crudController.readDataById);
 router.put('/data/:id', crudController.updateData);
 router.delete('/data/:id', crudController.deleteData);
 
+router.get('/hisdata/:id', crudController.getHistoryById);
+
 module.exports = router;

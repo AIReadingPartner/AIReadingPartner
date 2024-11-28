@@ -1,5 +1,23 @@
 // server/controllers/crudController.js
 const RequestData = require('../models/RequestData');
+const GeminiReq = require("../models/geminiReq");
+
+exports.getHistoryById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const data = await GeminiReq.find({ userId }).sort({ createdAt: -1 });
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: 'No data found for this user ID' });
+    }
+
+    res.json({ message: 'Request data found', data });
+  } catch (error) {
+    console.error('Error retrieving data:', error);
+    res.status(500).json({ message: 'Error retrieving data', error });
+  }
+};
 
 // create a new request data
 exports.createData = async (req, res) => {

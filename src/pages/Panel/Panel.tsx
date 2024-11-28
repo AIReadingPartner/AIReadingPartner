@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './Panel.css';
 import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
-import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { extractStructuredText } from './utils/extract-structured-text.js';
+import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { port, host } from './api';
 const { TextArea } = Input;
 
@@ -90,34 +90,8 @@ const Panel: React.FC = () => {
     }
   };
 
-  // New helper function to extract webpage content
-  const extractWebpageContent = async (): Promise<string> => {
-    try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab.id || tab.url?.startsWith('chrome://')) {
-        return 'This page cannot be analyzed. Please navigate to a regular webpage.';
-      }
-
-      const result = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: extractStructuredText,
-      });
-      return result[0].result;
-    } catch (err) {
-      console.error('Error extracting webpage content:', err);
-      return 'An error occurred while analyzing the page.';
-    }
-  };
-
   // send goal
   const sendGoal = async (goal: string) => {
-    // highlight the text
-    handleUpdateHighlight(goal);
-
     setMessages((prevMessages) => [
       // ...prevMessages, // clear messages when sending a new goal
       { type: 'sent', content: goal },
@@ -129,6 +103,10 @@ const Panel: React.FC = () => {
     const userId = sessionId + currentTabIdRef.current;
     const currentWebpage = await extractWebpageContent();
     console.log(currentWebpage);
+
+    //highlight important text
+    console.log('Update button clicked, highlighting important text...');
+    await handleUpdateHighlight(goal);
 
     // Updated request body to match API format
     const requestBody = {
@@ -324,64 +302,6 @@ const Panel: React.FC = () => {
       if (goal.trim()) {
         sendGoal(goal);
       }
-    }
-  };
-
-  // Add new function to send custom request
-  const sendCustomRequest = async (customRequest: string) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { type: 'sent', content: customRequest },
-    ]);
-
-    setMessageInput('');
-
-    try {
-      const currentWebPage = await extractWebpageContent();
-
-      const requestBody = {
-        userId: currentTabId,
-        type: 'request',
-        browsingTarget: goal,
-        currentWebpage: currentWebPage,
-        customizedRequest: customRequest,
-      };
-
-      const response = await fetch(
-        'http://localhost:3030/api/task/customizedReq',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          type: 'received',
-          content: data.response || 'No response available.',
-        },
-      ]);
-    } catch (err) {
-      console.error('Error in sendCustomRequest:', err);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          type: 'received',
-          content: 'Sorry, there was an error processing your request.',
-        },
-      ]);
     }
   };
 

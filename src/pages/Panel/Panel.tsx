@@ -361,6 +361,9 @@ const Panel: React.FC = () => {
       console.log(err);
       receivedSummary('Error processing your request. Please try again.');
     }
+
+    // update highlight
+    handleUpdateClick(goal);
   };
 
   // received summary
@@ -372,14 +375,12 @@ const Panel: React.FC = () => {
   };
 
   const initPanelbyTabId = async (tabId: string) => {
+    console.log('Init panel by tab id:', tabId);
     // default page
-    if (tabId === undefined || tabId === '') {
-      // empty message
-      setMessages([]);
-      setGoal('');
-      setMessageInput('');
-      return;
-    }
+    setMessages([]);
+    setGoal('');
+    setMessageInput('');
+    setIsLoading(true);
     // call API
     try {
       // const response = await fetch(`http://localhost:3030/history/${tabId}`);
@@ -392,6 +393,8 @@ const Panel: React.FC = () => {
       setMessageInput('test');
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -407,8 +410,10 @@ const Panel: React.FC = () => {
     try {
       const currentWebPage = await extractWebpageContent();
 
+      const sessionId = await getSessionId();
+      const userId = sessionId + currentTabId;
       const requestBody = {
-        userId: currentTabId,
+        userId: userId,
         type: 'request',
         browsingTarget: goal,
         currentWebpage: currentWebPage,
@@ -457,6 +462,7 @@ const Panel: React.FC = () => {
     const handleMessage = (request: any, sender: any, sendResponse: any) => {
       if (request.action === 'tabChanged') {
         console.log('Tab changed:', request.tabId);
+        setCurrentTabId(request.tabId);
         initPanelbyTabId(request.tabId);
       }
       sendResponse({ status: 'Message received' });

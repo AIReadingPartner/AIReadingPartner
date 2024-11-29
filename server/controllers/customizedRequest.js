@@ -64,7 +64,7 @@ exports.customizedReq = async (req, res) => {
         console.log("Started chat with model. Sending prompt...");
 
         const result = await chat.sendMessage(prompt);
-        const responseText = result.response.text().trim().replace(/^yes\s*/i, '');
+        const responseText = result.response.text().trim();
         console.log("Raw response from model:", responseText);
         console.log("Model History after adding model response:", modelHistory);
 

@@ -23,6 +23,19 @@ const Panel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoalLoading, setIsGoalLoading] = useState(false);
 
+  // Add this ref for the messages container
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Add this scroll helper function
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Add this useEffect to scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   // Get Session Id
   const getSessionId = async () => {
     return new Promise<string>((resolve, reject) => {
@@ -366,6 +379,8 @@ const Panel: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    {/* Add this div at the end of messages */}
+                    <div ref={messagesEndRef} />
                   </div>
                 </div>
 

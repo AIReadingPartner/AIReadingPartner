@@ -64,7 +64,7 @@ exports.customizedReq = async (req, res) => {
         console.log("Started chat with model. Sending prompt...");
 
         const result = await chat.sendMessage(prompt);
-        const responseText = result.response.text().trim();
+        const responseText = result.response.text().trim().replace(/^yes\s*/i, '');
         console.log("Raw response from model:", responseText);
         console.log("Model History after adding model response:", modelHistory);
 
@@ -106,7 +106,8 @@ exports.customizedReq = async (req, res) => {
         res.json({
             message: "Customized request processed successfully",
             response: responseText,
-            history: modelHistory,
+            ifValid: ifValid,
+            // history: modelHistory,
         });
     } catch (error) {
         console.error("Error occurred while processing request:", error);

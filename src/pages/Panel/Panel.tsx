@@ -24,6 +24,7 @@ const Panel: React.FC = () => {
   const currentTabIdRef = React.useRef<string>('');
   const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoalLoading, setIsGoalLoading] = useState(false);
 
   // Add this ref for the messages container
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -359,7 +360,17 @@ const Panel: React.FC = () => {
       receivedSummary(data.textBody);
     } catch (err) {
       console.log(err);
-      receivedSummary('Error processing your request. Please try again.');
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop(); // Remove loading message
+        newMessages.push({
+          type: 'received',
+          content: 'Error processing your request. Please try again.',
+        });
+        return newMessages;
+      });
+    } finally {
+      setIsGoalLoading(false);
     }
 
     // update highlight
@@ -403,13 +414,13 @@ const Panel: React.FC = () => {
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: 'sent', content: customRequest },
+      { type: 'received', content: '', loading: true },
     ]);
 
     setMessageInput('');
 
     try {
       const currentWebPage = await extractWebpageContent();
-
       const sessionId = await getSessionId();
       const userId = sessionId + currentTabId;
       const requestBody = {
@@ -439,18 +450,22 @@ const Panel: React.FC = () => {
 
       const data = await response.json();
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop();
+        newMessages.push({
           type: 'received',
-          content: data.response || 'No response available.',
-        },
-      ]);
+          content: data.ifValid
+            ? data.response
+            : 'Based on your current page, I cannot find out the answer.',
+        });
+        return newMessages;
+      });
     } catch (err) {
-      console.error('Error in sendCustomRequest:', err);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop();
+        newMessages.push({
           type: 'received',
           content: 'Sorry, there was an error processing your request.',
         },

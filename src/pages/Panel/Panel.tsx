@@ -3,7 +3,6 @@ import './Panel.css';
 import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text.js';
-import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { port, host } from './api';
 const { TextArea } = Input;
 
@@ -103,10 +102,6 @@ const Panel: React.FC = () => {
     const userId = sessionId + currentTabIdRef.current;
     const currentWebpage = await extractWebpageContent();
     console.log(currentWebpage);
-
-    //highlight important text
-    console.log('Update button clicked, highlighting important text...');
-    await handleUpdateHighlight(goal);
 
     // Updated request body to match API format
     const requestBody = {

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Panel.css';
 import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text.js';
 const { TextArea } = Input;
 
 interface Message {
   type: 'sent' | 'received';
   content: string;
+  loading?: boolean;
 }
 
 const Panel: React.FC = () => {
@@ -20,6 +21,7 @@ const Panel: React.FC = () => {
   ]);
   const [currentTabId, setCurrentTabId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoalLoading, setIsGoalLoading] = useState(false);
 
   // Get Session Id
   const getSessionId = async () => {
@@ -74,10 +76,11 @@ const Panel: React.FC = () => {
 
   // send goal
   const sendGoal = async (goal: string) => {
-    // Add user's goal message to messages
+    setIsGoalLoading(true);
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: 'sent', content: goal },
+      { type: 'received', content: '', loading: true }
     ]);
 
     const sessionId = await getSessionId();
@@ -122,10 +125,25 @@ const Panel: React.FC = () => {
         return;
       }
 
-      receivedSummary(data.data.result);
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop(); // Remove loading message
+        newMessages.push({ type: 'received', content: data.data.result });
+        return newMessages;
+      });
     } catch (err) {
       console.log(err);
-      receivedSummary('Error processing your request. Please try again.');
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop(); // Remove loading message
+        newMessages.push({ 
+          type: 'received', 
+          content: 'Error processing your request. Please try again.' 
+        });
+        return newMessages;
+      });
+    } finally {
+      setIsGoalLoading(false);
     }
   };
 
@@ -185,13 +203,13 @@ const Panel: React.FC = () => {
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: 'sent', content: customRequest },
+      { type: 'received', content: '', loading: true }
     ]);
 
     setMessageInput('');
 
     try {
       const currentWebPage = await extractWebpageContent();
-
       const sessionId = await getSessionId();
       const userId = sessionId + currentTabId;
       const requestBody = {
@@ -219,25 +237,49 @@ const Panel: React.FC = () => {
 
       const data = await response.json();
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop();
+        newMessages.push({
           type: 'received',
-          content: data.response || 'No response available.',
-        },
-      ]);
+          content: data.ifValid ? 
+            data.response : 
+            'Based on your current page, I cannot find out the answer.',
+        });
+        return newMessages;
+      });
     } catch (err) {
-      console.error('Error in sendCustomRequest:', err);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages.pop();
+        newMessages.push({
           type: 'received',
-          content:
-            err instanceof Error
-              ? `Error: ${err.message}`
-              : 'Sorry, there was an error processing your request.',
-        },
-      ]);
+          content: err instanceof Error
+            ? `Error: ${err.message}`
+            : 'Sorry, there was an error processing your request.',
+        });
+        return newMessages;
+      });
+    }
+  };
+
+  // Add this new function to handle key press
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (messageInput.trim()) {
+        sendCustomRequest(messageInput);
+      }
+    }
+  };
+
+  // Add goal key press handler
+  const handleGoalKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (goal.trim()) {
+        sendGoal(goal);
+      }
     }
   };
 
@@ -265,93 +307,92 @@ const Panel: React.FC = () => {
   return (
     <div className="container">
       <div>
-        {' '}
-        {isLoading && <Spin tip="Loading" size="large" style={{marginTop: '20px'}}> </Spin>}
-        {!isLoading && 
-          <div>
-            <h2>Browsing Goals</h2>
+        {isLoading ? (
+          <div className="loading-spinner">
+            <Spin tip="Loading" size="large" />
+          </div>
+        ) : (
+          <div className="main-content">
+            <h2 className="section-title">Browsing Goals</h2>
             <div className="input-container">
               <div className="textarea-wrapper">
                 <TextArea
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
+                  onKeyDown={handleGoalKeyPress}
                   placeholder="Let's start browsing! Please let me know your goal."
-                  autoSize={{ minRows: 3, maxRows: 5 }}
+                  autoSize={{ minRows: 2, maxRows: 5 }}
+                  className="custom-textarea"
                 />
                 <Button
                   type="primary"
-                  disabled={!goal.trim()}
+                  disabled={!goal.trim() || isGoalLoading}
                   onClick={() => sendGoal(goal)}
+                  className="update-button"
                 >
-                  Update
+                  {isGoalLoading ? 'Updating...' : 'Update'}
                 </Button>
               </div>
             </div>
-            {messages.length > 0 && <h2>Ask Gemini</h2>}
+
             {messages.length > 0 && (
-              <div className="messages-container">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`message-wrapper ${
-                      message.type === 'sent'
-                        ? 'message-sent'
-                        : 'message-received'
-                    }`}
-                  >
-                    <Space align="start">
-                      {message.type === 'received' && (
-                        <Avatar
-                          style={{ backgroundColor: '#e05656' }}
-                          icon={<UserOutlined />}
-                        />
-                      )}
-                      <Card
-                        size="small"
-                        style={{
-                          borderRadius:
-                            message.type === 'sent'
-                              ? '8px 0 8px 8px'
-                              : '0 8px 8px 8px',
-                          backgroundColor:
-                            message.type === 'sent' ? '#1890ff' : '#e05656',
-                          color: '#fff',
-                        }}
+              <>
+                <h2 className="section-title">Ask Gemini</h2>
+                <div className="messages-container">
+                  <div className="messages-wrapper">
+                    {messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`message-item ${message.type === 'sent' ? 'sent' : 'received'}`}
                       >
-                        {message.content}
-                      </Card>
-                      {message.type === 'sent' && (
-                        <Avatar
-                          style={{ backgroundColor: '#1890ff' }}
-                          icon={<UserOutlined />}
-                        />
-                      )}
-                    </Space>
+                        <div className="message-content">
+                          {message.type === 'received' && (
+                            <div className="avatar received">
+                              <DesktopOutlined />
+                            </div>
+                          )}
+                          <div className="message-bubble">
+                            {message.loading ? (
+                              <Spin size="small" />
+                            ) : (
+                              message.content
+                            )}
+                          </div>
+                          {message.type === 'sent' && (
+                            <div className="avatar sent">
+                              <UserOutlined />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            {messages.length > 0 && (
-              <div className="input-container">
-                <div className="textarea-wrapper">
-                  <TextArea
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    placeholder="Message Gemini"
-                    autoSize={{ minRows: 4, maxRows: 5 }}
-                  />
-                  <Button
-                    type="primary"
-                    disabled={!messageInput.trim()}
-                    onClick={() => sendCustomRequest(messageInput)}
-                  >
-                    Send
-                  </Button>
                 </div>
-              </div>
+
+                <div className="input-container">
+                  <div className="textarea-wrapper">
+                    <TextArea
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      placeholder="Message Gemini"
+                      autoSize={{ minRows: 2, maxRows: 5 }}
+                      className="custom-textarea"
+                    />
+                    <Button
+                      type="primary"
+                      disabled={!messageInput.trim()}
+                      onClick={() => sendCustomRequest(messageInput)}
+                      className="send-button"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
-        }
+        )}
       </div>
     </div>
   );

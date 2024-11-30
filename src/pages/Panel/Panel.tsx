@@ -24,7 +24,6 @@ const Panel: React.FC = () => {
   const currentTabIdRef = React.useRef<string>('');
   const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoalLoading, setIsGoalLoading] = useState(false);
 
   // Add this ref for the messages container
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -360,17 +359,9 @@ const Panel: React.FC = () => {
       receivedSummary(data.textBody);
     } catch (err) {
       console.log(err);
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop(); // Remove loading message
-        newMessages.push({
-          type: 'received',
-          content: 'Error processing your request. Please try again.',
-        });
-        return newMessages;
-      });
+      receivedMessage('Error processing your request. Please try again.');
     } finally {
-      setIsGoalLoading(false);
+      cannotUpdate.current = false;
     }
 
     // update highlight
@@ -378,11 +369,19 @@ const Panel: React.FC = () => {
   };
 
   // received summary
-  const receivedSummary = async (summary: string) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { type: 'received', content: summary },
-    ]);
+  const receivedMessage = async (message: string) => {
+    setMessages((prevMessages) => {
+      const newMessages = [...prevMessages];
+      // Remove loading message
+      if (
+        newMessages.length > 0 &&
+        newMessages[newMessages.length - 1].loading
+      ) {
+        newMessages.pop();
+      }
+      newMessages.push({ type: 'received', content: message });
+      return newMessages;
+    });
   };
 
   const initPanelbyTabId = async (tabId: string) => {
@@ -416,13 +415,13 @@ const Panel: React.FC = () => {
       { type: 'sent', content: customRequest },
       { type: 'received', content: '', loading: true },
     ]);
-
+    cannotUpdate.current = true;
     setMessageInput('');
 
     try {
       const currentWebPage = await extractWebpageContent();
       const sessionId = await getSessionId();
-      const userId = sessionId + currentTabId;
+      const userId = sessionId + currentTabIdRef.current;
       const requestBody = {
         userId: userId,
         type: 'request',
@@ -432,7 +431,8 @@ const Panel: React.FC = () => {
       };
 
       const response = await fetch(
-        'http://localhost:3030/api/task/customizedReq',
+        // 'http://localhost:3030/api/task/customizedReq',
+        `http://${host}:${port}/api/task/customizedReq`,
         {
           method: 'POST',
           headers: {
@@ -449,18 +449,13 @@ const Panel: React.FC = () => {
       }
 
       const data = await response.json();
-
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop();
-        newMessages.push({
-          type: 'received',
-          content: data.ifValid
-            ? data.response
-            : 'Based on your current page, I cannot find out the answer.',
-        });
-        return newMessages;
-      });
+      if (data.ifValid) {
+        receivedMessage(data.response);
+      } else {
+        receivedMessage(
+          'Based on your current page, I cannot find out the answer.'
+        );
+      }
     } catch (err) {
       setMessages((prevMessages) => {
         const newMessages = [...prevMessages];
@@ -476,9 +471,17 @@ const Panel: React.FC = () => {
   useEffect(() => {
     const handleMessage = (request: any, sender: any, sendResponse: any) => {
       if (request.action === 'tabChanged') {
-        console.log('Tab changed:', request.tabId);
-        setCurrentTabId(request.tabId);
-        initPanelbyTabId(request.tabId);
+        const tabId = String(request.tabId);
+        if (currentTabIdRef.current !== tabId) {
+          console.log(
+            'Tab changed from:',
+            currentTabIdRef.current,
+            'to:',
+            tabId
+          );
+          currentTabIdRef.current = tabId;
+          initPanelbyTabId(tabId);
+        }
       }
       sendResponse({ status: 'Message received' });
     };

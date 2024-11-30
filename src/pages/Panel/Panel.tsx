@@ -3,6 +3,7 @@ import './Panel.css';
 import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text.js';
+import { port, host } from './api';
 const { TextArea } = Input;
 
 interface Message {
@@ -19,16 +20,17 @@ const Panel: React.FC = () => {
     // { type: 'received', content: 'Hi! How can I help you today?' },
     // { type: 'sent', content: 'I have a question about programming.' },
   ]);
-  const [currentTabId, setCurrentTabId] = useState<string>('');
+  // const [currentTabId, setCurrentTabId] = useState<string>('');
+  const currentTabIdRef = React.useRef<string>('');
+  const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoalLoading, setIsGoalLoading] = useState(false);
 
   // Add this ref for the messages container
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   // Add this scroll helper function
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Add this useEffect to scroll when messages change
@@ -57,7 +59,7 @@ const Panel: React.FC = () => {
         currentWindow: true,
       });
       if (tabs[0].id !== undefined) {
-        setCurrentTabId(tabs[0].id.toString());
+        return tabs[0].id.toString();
       }
     } catch (err) {
       console.log(err);
@@ -80,7 +82,7 @@ const Panel: React.FC = () => {
         target: { tabId: tab.id },
         func: extractStructuredText,
       });
-      return result[0].result;
+      return String(result[0].result);
     } catch (err) {
       console.error('Error extracting webpage content:', err);
       return 'An error occurred while analyzing the page.';
@@ -89,15 +91,15 @@ const Panel: React.FC = () => {
 
   // send goal
   const sendGoal = async (goal: string) => {
-    setIsGoalLoading(true);
     setMessages((prevMessages) => [
-      ...prevMessages,
+      // ...prevMessages, // clear messages when sending a new goal
       { type: 'sent', content: goal },
-      { type: 'received', content: '', loading: true }
+      { type: 'received', content: '', loading: true },
     ]);
+    cannotUpdate.current = true;
 
     const sessionId = await getSessionId();
-    const userId = sessionId + currentTabId;
+    const userId = sessionId + currentTabIdRef.current;
     const currentWebpage = await extractWebpageContent();
     console.log(currentWebpage);
 
@@ -111,7 +113,8 @@ const Panel: React.FC = () => {
 
     try {
       const response = await fetch(
-        'http://localhost:3030/api/task/pageSummarize',
+        // 'http://localhost:3030/api/task/pageSummarize',
+        `http://${host}:${port}/api/task/pageSummarize`,
         {
           method: 'POST',
           headers: {
@@ -130,42 +133,32 @@ const Panel: React.FC = () => {
 
       // Updated to match API response structure
       if (!data.data.ifValid) {
-        receivedSummary('Invalid Goal. Please try again.');
-        return;
+        receivedMessage('Invalid Goal. Please try again.');
+      } else if (userId === data.data.userId) {
+        receivedMessage(data.data.result);
       }
-
-      if (userId !== data.data.userId) {
-        return;
-      }
-
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop(); // Remove loading message
-        newMessages.push({ type: 'received', content: data.data.result });
-        return newMessages;
-      });
     } catch (err) {
       console.log(err);
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop(); // Remove loading message
-        newMessages.push({ 
-          type: 'received', 
-          content: 'Error processing your request. Please try again.' 
-        });
-        return newMessages;
-      });
+      receivedMessage('Error processing your request. Please try again.');
     } finally {
-      setIsGoalLoading(false);
+      cannotUpdate.current = false;
     }
   };
 
   // received summary
-  const receivedSummary = async (summary: string) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { type: 'received', content: summary },
-    ]);
+  const receivedMessage = async (message: string) => {
+    setMessages((prevMessages) => {
+      const newMessages = [...prevMessages];
+      // Remove loading message
+      if (
+        newMessages.length > 0 &&
+        newMessages[newMessages.length - 1].loading
+      ) {
+        newMessages.pop();
+      }
+      newMessages.push({ type: 'received', content: message });
+      return newMessages;
+    });
   };
 
   const initPanelbyTabId = async (tabId: string) => {
@@ -179,7 +172,8 @@ const Panel: React.FC = () => {
     try {
       const userId = (await getSessionId()) + tabId;
       const response = await fetch(
-        `http://localhost:3030/api/crud/hisdata/${userId}`
+        // `http://localhost:3030/api/crud/hisdata/${userId}`
+        `http://${host}:${port}/api/crud/hisdata/${userId}`
       );
       if (response.status === 404) {
         return;
@@ -189,18 +183,36 @@ const Panel: React.FC = () => {
       }
       const data = await response.json().then((data) => data.data);
       console.log(data);
+      // sort data by createdAt older to newer
+      data.sort((a: any, b: any) => {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
+
       for (let i = 0; i < data.length; i++) {
         if (data[i].type === 'summary') {
           setGoal(data[i].browsingTarget);
-          setMessages([
+          setMessages((prevMessages) => [
+            // ...prevMessages, // clear messages when having a new goal
             { type: 'sent', content: data[i].browsingTarget },
-            { type: 'received', content: data[i].result },
+            {
+              type: 'received',
+              content: data[i].ifValid
+                ? data[i].result
+                : 'Invalid Goal. Please try again.',
+            },
           ]);
         } else if (data[i].type === 'request') {
           setMessages((prevMessages) => [
             ...prevMessages,
             { type: 'sent', content: data[i].customizedRequest },
-            { type: 'received', content: data[i].response },
+            {
+              type: 'received',
+              content: data[i].ifValid
+                ? data[i].result
+                : 'Based on your current page, I cannot find out the answer.',
+            },
           ]);
         }
       }
@@ -216,15 +228,15 @@ const Panel: React.FC = () => {
     setMessages((prevMessages) => [
       ...prevMessages,
       { type: 'sent', content: customRequest },
-      { type: 'received', content: '', loading: true }
+      { type: 'received', content: '', loading: true },
     ]);
-
+    cannotUpdate.current = true;
     setMessageInput('');
 
     try {
       const currentWebPage = await extractWebpageContent();
       const sessionId = await getSessionId();
-      const userId = sessionId + currentTabId;
+      const userId = sessionId + currentTabIdRef.current;
       const requestBody = {
         userId: userId,
         type: 'request',
@@ -234,7 +246,8 @@ const Panel: React.FC = () => {
       };
 
       const response = await fetch(
-        'http://localhost:3030/api/task/customizedReq',
+        // 'http://localhost:3030/api/task/customizedReq',
+        `http://${host}:${port}/api/task/customizedReq`,
         {
           method: 'POST',
           headers: {
@@ -249,30 +262,21 @@ const Panel: React.FC = () => {
       }
 
       const data = await response.json();
-
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop();
-        newMessages.push({
-          type: 'received',
-          content: data.ifValid ? 
-            data.response : 
-            'Based on your current page, I cannot find out the answer.',
-        });
-        return newMessages;
-      });
+      if (data.ifValid) {
+        receivedMessage(data.response);
+      } else {
+        receivedMessage(
+          'Based on your current page, I cannot find out the answer.'
+        );
+      }
     } catch (err) {
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        newMessages.pop();
-        newMessages.push({
-          type: 'received',
-          content: err instanceof Error
-            ? `Error: ${err.message}`
-            : 'Sorry, there was an error processing your request.',
-        });
-        return newMessages;
-      });
+      if (err instanceof Error) {
+        receivedMessage(`Error: ${err.message}`);
+      } else {
+        receivedMessage('Sorry, there was an error processing your request.');
+      }
+    } finally {
+      cannotUpdate.current = false;
     }
   };
 
@@ -299,19 +303,33 @@ const Panel: React.FC = () => {
   useEffect(() => {
     const handleMessage = (request: any, sender: any, sendResponse: any) => {
       if (request.action === 'tabChanged') {
-        console.log('Tab changed:', request.tabId);
-        setCurrentTabId(request.tabId);
-        initPanelbyTabId(request.tabId);
+        const tabId = String(request.tabId);
+        if (currentTabIdRef.current !== tabId) {
+          console.log(
+            'Tab changed from:',
+            currentTabIdRef.current,
+            'to:',
+            tabId
+          );
+          currentTabIdRef.current = tabId;
+          initPanelbyTabId(tabId);
+        }
       }
       sendResponse({ status: 'Message received' });
     };
 
     chrome.runtime.onMessage.addListener(handleMessage);
 
-    // Get current tab id
-    getCurrentTabId();
+    // Get current tab id on mount
+    getCurrentTabId().then((tabId) => {
+      if (tabId) {
+        currentTabIdRef.current = tabId;
+        console.log('Current tab ID:', tabId);
+        initPanelbyTabId(tabId);
+      }
+    });
 
-    // Cleanup listener on component unmount
+    // Cleanup listener on unmount
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
     };
@@ -339,11 +357,11 @@ const Panel: React.FC = () => {
                 />
                 <Button
                   type="primary"
-                  disabled={!goal.trim() || isGoalLoading}
+                  disabled={!goal.trim() || cannotUpdate.current}
                   onClick={() => sendGoal(goal)}
                   className="update-button"
                 >
-                  {isGoalLoading ? 'Updating...' : 'Update'}
+                  {!cannotUpdate ? 'Updating...' : 'Update'}
                 </Button>
               </div>
             </div>
@@ -356,7 +374,9 @@ const Panel: React.FC = () => {
                     {messages.map((message, index) => (
                       <div
                         key={index}
-                        className={`message-item ${message.type === 'sent' ? 'sent' : 'received'}`}
+                        className={`message-item ${
+                          message.type === 'sent' ? 'sent' : 'received'
+                        }`}
                       >
                         <div className="message-content">
                           {message.type === 'received' && (
@@ -396,7 +416,7 @@ const Panel: React.FC = () => {
                     />
                     <Button
                       type="primary"
-                      disabled={!messageInput.trim()}
+                      disabled={!messageInput.trim() || cannotUpdate.current}
                       onClick={() => sendCustomRequest(messageInput)}
                       className="send-button"
                     >

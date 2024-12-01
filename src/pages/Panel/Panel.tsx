@@ -366,7 +366,7 @@ const Panel: React.FC = () => {
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   onKeyDown={handleGoalKeyPress}
-                  placeholder="Let's start browsing! Please let me know your goal."
+                  placeholder="Let's start browsing! Please let me know your goal. Example: I want to know the main content of the page."
                   autoSize={{ minRows: 2, maxRows: 5 }}
                   className="custom-textarea"
                 />

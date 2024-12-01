@@ -1,124 +1,238 @@
 .container {
-  color: #000000;
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  min-height: 90vh;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  /* padding: 24px; */
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 90vh;
+  max-height: 100vh;
+  /* background-color: #fafafa; */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  /* min-height: 96vh;
+  max-height: 96vh; */
+  height: 96vh;
+  flex-grow: 1;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 12px;
+  width: 4px;
+  background: linear-gradient(to bottom, #4f46e5, #3730a3);
+  border-radius: 2px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
 }
 
 .messages-container {
+  flex-grow: 1;
+  background-color: #ffffff;
+  border-radius: 16px;
+  margin: 6px 0;
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid #bec1c9;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.messages-wrapper {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 20px;
-  height: auto;
-  flex: 1;
-  min-height: 200px;
-  overflow-y: auto;
-  padding: 16px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
 }
 
-.message-wrapper {
+.message-item {
   display: flex;
   width: 100%;
+  margin-bottom: 12px;
 }
 
-.message-sent {
+.message-item.sent {
   justify-content: flex-end;
 }
 
-.message-received {
+.message-item.received {
   justify-content: flex-start;
 }
 
-/* Style for the input area */
-.ant-input {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border-color: #d9d9d9 !important;
-  margin-bottom: 16px;
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 80%;
+  position: relative;
 }
 
-.ant-input::placeholder {
-  color: #bfbfbf !important;
+.message-bubble {
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* Style for the cards */
-.ant-card {
-  max-width: 70%;
-  word-wrap: break-word;
+.sent .message-bubble {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border-top-right-radius: 4px;
+  margin-right: 8px;
 }
 
-.ant-card-body {
-  padding: 12px 16px !important;
-}
-
-/* Space between input and button */
-.ant-btn {
+.received .message-bubble {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: white;
+  border-top-left-radius: 4px;
   margin-left: 8px;
 }
 
-/* Custom scrollbar */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  top: -4px;
+}
+
+.avatar .anticon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.avatar.sent {
+  background-color: #ef4444;
+}
+
+.avatar.received {
+  background-color: #8b5cf6;
+}
+
+.input-container {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+.textarea-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.custom-textarea {
+  width: 100%;
+  border: 0.8px rgba(0, 0, 0, 0.382) solid !important;
+  border-radius: 14px !important;
+  padding: 14px !important;
+  padding-right: 110px !important;
+  font-size: 14.5px !important;
+  line-height: 1.6 !important;
+  background-color: #fafafa !important;
+  resize: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.custom-textarea:focus {
+  border-color: #3b82f6 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.update-button,
+.send-button {
+  position: absolute !important;
+  bottom: 10px !important;
+  right: 10px !important;
+  border-radius: 12px !important;
+  height: 36px !important;
+  font-size: 14.5px !important;
+  background: #3b82f6 !important;
+  border: solid 1px #3b82f6 !important;
+  color: #ffffff !important;
+  padding: 0 20px !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+}
+
+.update-button:hover:not(:disabled),
+.send-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  transform: translateY(-1px);
+}
+
+.update-button:disabled,
+.send-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background: #808080 !important;
+  border-color: #808080 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Custom Scrollbar */
 .messages-container::-webkit-scrollbar {
   width: 6px;
 }
 
 .messages-container::-webkit-scrollbar-track {
-  background: #f5f5f5;
+  background: #f1f1f1;
+  border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
+  background: #c1c1c1;
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
+  background: #a8a8a8;
 }
 
-.input-container {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  position: sticky;
-  bottom: 0;
-  background-color: #ffffff;
-}
-
-.input-container .ant-input {
-  flex: 1;
-  margin-bottom: 0 !important;
-}
-
-.input-container .ant-btn {
-  margin-left: 0;
-
-  /* height: 82px; */
-}
-
-.textarea-wrapper {
-  position: relative;
-  flex: 1;
-}
-
-.textarea-wrapper .ant-btn {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  z-index: 1;
-}
-
-.input-container .ant-input {
-  padding-right: 100px;
-}
-
-/* Remove the previous button margin styles */
-.input-container .ant-btn {
-  margin-left: 0;
+.sent .message-bubble,
+.received .message-bubble {
+  /* Update the Spin component styles */
+  :where(.css-dev-only-do-not-override-xu9wm8).ant-spin,
+  :where(.css-dev-only-do-not-override-xu9wm8).ant-spin .ant-spin-dot-item {
+    color: white !important;
+  }
+  
+  .ant-spin-dot-item {
+    background-color: white !important;
+  }
 }

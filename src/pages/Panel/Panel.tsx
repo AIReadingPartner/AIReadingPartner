@@ -106,7 +106,7 @@ const Panel: React.FC = () => {
     const sessionId = await getSessionId();
     const userId = sessionId + currentTabIdRef.current;
     const currentWebpage = await extractWebpageContent();
-    console.log(currentWebpage);
+    // console.log(currentWebpage);
 
     // Updated request body to match API format
     const requestBody = {
@@ -134,7 +134,7 @@ const Panel: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
 
       // Updated to match API response structure
       if (!data.data.ifValid) {
@@ -184,13 +184,17 @@ const Panel: React.FC = () => {
         `http://${host}:${port}/api/crud/hisdata/${userId}`
       );
       if (response.status === 404) {
+        console.log('No data found for ' + tabId + ', using default goal.');
+        if (defaultGoalRef.current && defaultGoalRef.current !== '') {
+          sendGoal(defaultGoalRef.current);
+        }
         return;
       }
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json().then((data) => data.data);
-      console.log(data);
+      // console.log(data);
       // sort data by createdAt older to newer
       data.sort((a: any, b: any) => {
         return (
@@ -225,7 +229,10 @@ const Panel: React.FC = () => {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log('Error got, using default goal.');
+      if (defaultGoalRef.current && defaultGoalRef.current !== '') {
+        sendGoal(defaultGoalRef.current);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -376,7 +376,7 @@ const Panel: React.FC = () => {
                   onClick={() => sendGoal(goal)}
                   className="update-button"
                 >
-                  {!cannotUpdate ? 'Updating...' : 'Update'}
+                  {messages.length > 0 ? 'Update' : 'Send'}
                 </Button>
               </div>
             </div>

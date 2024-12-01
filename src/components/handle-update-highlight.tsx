@@ -30,7 +30,7 @@ const getActiveTab = (): Promise<chrome.tabs.Tab> => {
   });
 };
 
-export const handleUpdateClick = async (goal: string) => {
+export const handleUpdateHighlight = async (goal: string) => {
   console.log('Update button clicked');
 
   try {

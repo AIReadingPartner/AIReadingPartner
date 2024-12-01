@@ -25,6 +25,7 @@ const Panel: React.FC = () => {
   const currentTabIdRef = React.useRef<string>('');
   const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const defaultGoalRef = React.useRef<string>('');
 
   // Add this ref for the messages container
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -141,6 +142,9 @@ const Panel: React.FC = () => {
       } else if (userId === data.data.userId) {
         receivedMessage(data.data.result);
       }
+
+      // Update default goal
+      defaultGoalRef.current = goal;
     } catch (err) {
       console.log(err);
       receivedMessage('Error processing your request. Please try again.');
@@ -169,7 +173,7 @@ const Panel: React.FC = () => {
     console.log('Init panel by tab id:', tabId);
     // default page
     setMessages([]);
-    setGoal('');
+    setGoal(defaultGoalRef.current);
     setMessageInput('');
     setIsLoading(true);
     // call API

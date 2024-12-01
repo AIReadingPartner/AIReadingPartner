@@ -4,6 +4,7 @@ import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text.js';
 import { port, host } from './api';
+import { UpdateSummaryButton } from '../../components/update-summary-button';
 const { TextArea } = Input;
 
 interface Message {
@@ -91,7 +92,7 @@ const Panel: React.FC = () => {
 
   // send goal
   const sendGoal = async (goal: string) => {
-    setMessages((prevMessages) => [
+    setMessages(() => [
       // ...prevMessages, // clear messages when sending a new goal
       { type: 'sent', content: goal },
       { type: 'received', content: '', loading: true },
@@ -193,7 +194,7 @@ const Panel: React.FC = () => {
       for (let i = 0; i < data.length; i++) {
         if (data[i].type === 'summary') {
           setGoal(data[i].browsingTarget);
-          setMessages((prevMessages) => [
+          setMessages(() => [
             // ...prevMessages, // clear messages when having a new goal
             { type: 'sent', content: data[i].browsingTarget },
             {
@@ -337,97 +338,143 @@ const Panel: React.FC = () => {
 
   return (
     <div className="container">
-      <div>
-        {isLoading ? (
-          <div className="loading-spinner">
-            <Spin tip="Loading" size="large" />
-          </div>
-        ) : (
-          <div className="main-content">
-            <h2 className="section-title">Browsing Goals</h2>
-            <div className="input-container">
-              <div className="textarea-wrapper">
-                <TextArea
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  onKeyDown={handleGoalKeyPress}
-                  placeholder="Let's start browsing! Please let me know your goal."
-                  autoSize={{ minRows: 2, maxRows: 5 }}
-                  className="custom-textarea"
+      <h2>Reading Goals</h2>
+      <div className="input-container">
+        <div className="textarea-wrapper">
+          <TextArea
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+            placeholder="Type your reading goals here..."
+            autoSize={{ minRows: 3, maxRows: 5 }}
+          />
+          <UpdateSummaryButton goal={goal} />
+          {/* <Button type="primary" disabled={!goal.trim()}>
+            Update
+          </Button> */}
+        </div>
+      </div>
+      <h2>Ask AI about anything</h2>
+      <div className="messages-container">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`message-wrapper ${
+              message.type === 'sent' ? 'message-sent' : 'message-received'
+            }`}
+          >
+            <Space align="start">
+              {message.type === 'received' && (
+                <Avatar
+                  style={{ backgroundColor: '#e05656' }}
+                  icon={<UserOutlined />}
                 />
-                <Button
-                  type="primary"
-                  disabled={!goal.trim() || cannotUpdate.current}
-                  onClick={() => sendGoal(goal)}
-                  className="update-button"
-                >
-                  {!cannotUpdate ? 'Updating...' : 'Update'}
-                </Button>
+              )}
+              <Card
+                size="small"
+                style={{
+                  borderRadius:
+                    message.type === 'sent' ? '8px 0 8px 8px' : '0 8px 8px 8px',
+                  backgroundColor:
+                    message.type === 'sent' ? '#1890ff' : '#e05656',
+                  color: '#fff',
+                }}
+              >
+                {message.content}
+              </Card>
+              {message.type === 'sent' && (
+                <Avatar
+                  style={{ backgroundColor: '#1890ff' }}
+                  icon={<UserOutlined />}
+                />
+              )}
+            </Space>
+            <div className="main-content">
+              <h2 className="section-title">Browsing Goals</h2>
+              <div className="input-container">
+                <div className="textarea-wrapper">
+                  <TextArea
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    onKeyDown={handleGoalKeyPress}
+                    placeholder="Let's start browsing! Please let me know your goal."
+                    autoSize={{ minRows: 2, maxRows: 5 }}
+                    className="custom-textarea"
+                  />
+                  <Button
+                    type="primary"
+                    disabled={!goal.trim() || cannotUpdate.current}
+                    onClick={() => sendGoal(goal)}
+                    className="update-button"
+                  >
+                    {!cannotUpdate ? 'Updating...' : 'Update'}
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {messages.length > 0 && (
-              <>
-                <h2 className="section-title">Ask Gemini</h2>
-                <div className="messages-container">
-                  <div className="messages-wrapper">
-                    {messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`message-item ${
-                          message.type === 'sent' ? 'sent' : 'received'
-                        }`}
-                      >
-                        <div className="message-content">
-                          {message.type === 'received' && (
-                            <div className="avatar received">
-                              <DesktopOutlined />
+              {messages.length > 0 && (
+                <>
+                  <h2 className="section-title">Ask Gemini</h2>
+                  <div className="messages-container">
+                    <div className="messages-wrapper">
+                      {messages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`message-item ${
+                            message.type === 'sent' ? 'sent' : 'received'
+                          }`}
+                        >
+                          <div className="message-content">
+                            {message.type === 'received' && (
+                              <div className="avatar received">
+                                <DesktopOutlined />
+                              </div>
+                            )}
+                            <div className="message-bubble">
+                              {message.loading ? (
+                                <Spin size="small" />
+                              ) : (
+                                message.content
+                              )}
                             </div>
-                          )}
-                          <div className="message-bubble">
-                            {message.loading ? (
-                              <Spin size="small" />
-                            ) : (
-                              message.content
+                            {message.type === 'sent' && (
+                              <div className="avatar sent">
+                                <UserOutlined />
+                              </div>
                             )}
                           </div>
-                          {message.type === 'sent' && (
-                            <div className="avatar sent">
-                              <UserOutlined />
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    ))}
-                    {/* Add this div at the end of messages */}
-                    <div ref={messagesEndRef} />
+                      ))}
+                      {/* Add this div at the end of messages */}
+                      <div ref={messagesEndRef} />
+                    </div>
                   </div>
-                </div>
 
-                <div className="input-container">
-                  <div className="textarea-wrapper">
-                    <TextArea
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      onKeyDown={handleKeyPress}
-                      placeholder="Message Gemini"
-                      autoSize={{ minRows: 2, maxRows: 5 }}
-                      className="custom-textarea"
-                    />
-                    <Button
-                      type="primary"
-                      disabled={!messageInput.trim() || cannotUpdate.current}
-                      onClick={() => sendCustomRequest(messageInput)}
-                      className="send-button"
-                    >
-                      Send
-                    </Button>
+                  <div className="input-container">
+                    <div className="textarea-wrapper">
+                      <TextArea
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        placeholder="Message Gemini"
+                        autoSize={{ minRows: 2, maxRows: 5 }}
+                        className="custom-textarea"
+                      />
+                      <Button
+                        type="primary"
+                        disabled={!messageInput.trim() || cannotUpdate.current}
+                        onClick={() => sendCustomRequest(messageInput)}
+                        className="send-button"
+                      >
+                        Send
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
+            );
           </div>
-        )}
+        ))}
       </div>
     </div>
   );

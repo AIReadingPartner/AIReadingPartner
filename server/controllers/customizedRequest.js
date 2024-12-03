@@ -37,7 +37,7 @@ exports.customizedReq = async (req, res) => {
       });
     }
 
-    const prompt = `Now I'm browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And my question is "${customizedRequest}". If my question is irrelavant to the webpage, answer with only "no"; if my question is relevant to the webpage, provide only an answer directly to "${customizedRequest}" with less than 200 words.`;
+    const prompt = `Now I'm browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And my question is "${customizedRequest}". If my question is irrelevant to the webpage, answer with only "no"; if my question is relevant to the webpage, provide only an answer directly to "${customizedRequest}" with less than 200 words.`;
     console.log(`Generated Prompt: ${prompt}`);
 
     console.log('Fetching request history for user...');

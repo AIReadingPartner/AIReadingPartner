@@ -236,3 +236,8 @@
     background-color: white !important;
   }
 }
+
+.loading-content {
+  padding: 50px;
+  text-align: center;
+}

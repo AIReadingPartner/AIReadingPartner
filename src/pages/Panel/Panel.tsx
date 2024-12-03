@@ -385,7 +385,7 @@ const Panel: React.FC = () => {
                         <div className="message-content">
                           {message.type === 'received' && (
                             <div className="avatar received">
-                              <DesktopOutlined />
+                              <div className="gemini-icon" />
                             </div>
                           )}
                           <div className="message-bubble">

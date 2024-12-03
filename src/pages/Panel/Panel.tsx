@@ -117,6 +117,9 @@ const Panel: React.FC = () => {
     };
 
     try {
+      // Update default goal
+      defaultGoalRef.current = goal;
+
       const response = await fetch(
         // 'http://localhost:3030/api/task/pageSummarize',
         `http://${host}:${port}/api/task/pageSummarize`,
@@ -139,12 +142,12 @@ const Panel: React.FC = () => {
       // Updated to match API response structure
       if (!data.data.ifValid) {
         receivedMessage('Invalid Goal. Please try again.');
-      } else if (userId === data.data.userId) {
+        defaultGoalRef.current = '';
+      } else if (sessionId + currentTabIdRef.current === data.data.userId) {
+        console.log('Received message:', data.data.result);
         receivedMessage(data.data.result);
       }
 
-      // Update default goal
-      defaultGoalRef.current = goal;
     } catch (err) {
       console.log(err);
       receivedMessage('Error processing your request. Please try again.');
@@ -184,7 +187,7 @@ const Panel: React.FC = () => {
         `http://${host}:${port}/api/crud/hisdata/${userId}`
       );
       if (response.status === 404) {
-        console.log('No data found for ' + tabId + ', using default goal.');
+        console.log('No data found for ' + tabId + ', using default goal: ' + defaultGoalRef.current);
         if (defaultGoalRef.current && defaultGoalRef.current !== '') {
           sendGoal(defaultGoalRef.current);
         }
@@ -193,7 +196,13 @@ const Panel: React.FC = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       const data = await response.json().then((data) => data.data);
+      // if current tab is not the same tab as the tab that sent the request, return
+      if (currentTabIdRef.current !== tabId) {
+        console.log('Tab changed, return');
+        return;
+      }
       // console.log(data);
       // sort data by createdAt older to newer
       data.sort((a: any, b: any) => {
@@ -277,6 +286,12 @@ const Panel: React.FC = () => {
       }
 
       const data = await response.json();
+      // if current tab is not the same tab as the tab that sent the request, return
+      if (data.userId !== sessionId + currentTabIdRef.current) {
+        console.log('Tab changed, return');
+        return;
+      }
+
       if (data.ifValid) {
         receivedMessage(data.response);
       } else {

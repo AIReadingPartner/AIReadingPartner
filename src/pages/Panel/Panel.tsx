@@ -190,25 +190,7 @@ const Panel: React.FC = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json().then((data) => data.data);
-      // console.log(data);
-      // sort data by createdAt older to newer
-      data.sort((a: any, b: any) => {
-        return (
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-      });
-
-      // If response is null or not ok, exit early
-      if (!response || !response.ok) {
-        if (response?.status === 404) {
-          console.log('No history found for this tab');
-        } else {
-          console.log(`Request failed with status: ${response?.status}`);
-        }
-        return;
-      }
-
+      
       const { data } = await response.json();
       
       if (!data || !Array.isArray(data)) {
@@ -244,7 +226,8 @@ const Panel: React.FC = () => {
             },
           ]);
         }
-      }
+      });
+      
     } catch (err) {
       console.log('Error got, using default goal.');
       if (defaultGoalRef.current && defaultGoalRef.current !== '') {

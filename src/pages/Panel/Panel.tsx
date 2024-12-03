@@ -3,6 +3,7 @@ import './Panel.css';
 import { Input, Button, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text';
+import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { port, host } from './api';
 const { TextArea } = Input;
 
@@ -94,6 +95,9 @@ const Panel: React.FC = () => {
       { type: 'received', content: '', loading: true },
     ]);
     cannotUpdate.current = true;
+
+    // update highlight
+    await handleUpdateHighlight(goal);
 
     const sessionId = await getSessionId();
     const userId = sessionId + currentTabIdRef.current;

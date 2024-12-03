@@ -37,7 +37,7 @@ exports.customizedReq = async (req, res) => {
       });
     }
 
-    const prompt = `Now I'm browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And I want to ask "${customizedRequest}". If the webpage and request are irrelevant and unhealthy, answer with only "no"; if the webpage and request are relevant and healthy that can be dealt with, provide only an answer directly to "${customizedRequest}" with less than 100 words.`;
+    const prompt = `Now I'm browsing a webpage with the text "${currentWebpage}" and my browsing target is "${browsingTarget}". And my question is "${customizedRequest}". If my question is irrelavant to the webpage, answer with only "no"; if my question is relevant to the webpage, provide only an answer directly to "${customizedRequest}" with less than 200 words.`;
     console.log(`Generated Prompt: ${prompt}`);
 
     console.log('Fetching request history for user...');
@@ -67,7 +67,7 @@ exports.customizedReq = async (req, res) => {
     }
     console.log('Model History before request:', modelHistory);
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-8b' });
     console.log('Initialized generative model.');
 
     const chat = model.startChat({ history: modelHistory });

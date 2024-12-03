@@ -22,6 +22,7 @@ const Panel: React.FC = () => {
   const currentTabIdRef = React.useRef<string>('');
   const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
+  const defaultGoalRef = React.useRef<string>('');
 
   // Add this ref for the messages container
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -102,7 +103,7 @@ const Panel: React.FC = () => {
     const sessionId = await getSessionId();
     const userId = sessionId + currentTabIdRef.current;
     const currentWebpage = await extractWebpageContent();
-    console.log(currentWebpage);
+    // console.log(currentWebpage);
 
     // Updated request body to match API format
     const requestBody = {
@@ -130,7 +131,7 @@ const Panel: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
 
       // Updated to match API response structure
       if (!data.data.ifValid) {
@@ -138,6 +139,9 @@ const Panel: React.FC = () => {
       } else if (userId === data.data.userId) {
         receivedMessage(data.data.result);
       }
+
+      // Update default goal
+      defaultGoalRef.current = goal;
     } catch (err) {
       console.log(err);
       receivedMessage('Error processing your request. Please try again.');
@@ -165,7 +169,7 @@ const Panel: React.FC = () => {
   const initPanelbyTabId = useCallback(async (tabId: string) => {
     console.log('Init panel by tab id:', tabId);
     setMessages([]);
-    setGoal('');
+    setGoal(defaultGoalRef.current);
     setMessageInput('');
     setIsLoading(true);
 
@@ -175,9 +179,24 @@ const Panel: React.FC = () => {
       // Use fetch with catch to prevent 404 from showing as error
       const response = await fetch(
         `http://${host}:${port}/api/crud/hisdata/${userId}`
-      ).catch(error => {
-        console.log('No history found for this tab');
-        return null;
+      );
+      if (response.status === 404) {
+        console.log('No data found for ' + tabId + ', using default goal.');
+        if (defaultGoalRef.current && defaultGoalRef.current !== '') {
+          sendGoal(defaultGoalRef.current);
+        }
+        return;
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json().then((data) => data.data);
+      // console.log(data);
+      // sort data by createdAt older to newer
+      data.sort((a: any, b: any) => {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
       });
 
       // If response is null or not ok, exit early
@@ -225,14 +244,12 @@ const Panel: React.FC = () => {
             },
           ]);
         }
-      });
-
-    } catch (error) {
-      console.log('Error initializing panel:', error);
-      setMessages([{
-        type: 'received',
-        content: 'Failed to load chat history. Please try again later.'
-      }]);
+      }
+    } catch (err) {
+      console.log('Error got, using default goal.');
+      if (defaultGoalRef.current && defaultGoalRef.current !== '') {
+        sendGoal(defaultGoalRef.current);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -368,7 +385,7 @@ const Panel: React.FC = () => {
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   onKeyDown={handleGoalKeyPress}
-                  placeholder="Let's start browsing! Please let me know your goal."
+                  placeholder="Let's start browsing! Please let me know your goal. Example: I want to know the main content of the page."
                   autoSize={{ minRows: 2, maxRows: 5 }}
                   className="custom-textarea"
                 />
@@ -378,7 +395,7 @@ const Panel: React.FC = () => {
                   onClick={() => sendGoal(goal)}
                   className="update-button"
                 >
-                  {!cannotUpdate ? 'Updating...' : 'Update'}
+                  {messages.length > 0 ? 'Update' : 'Send'}
                 </Button>
               </div>
             </div>

@@ -14,7 +14,7 @@ exports.pageSummarize = async (req, res) => {
 
         console.log("Task 1 called successfully");
 
-        const prompt = `Now I’m browsing a webpage with the text "${currentWebpage}" and I want to achieve "${browsingTarget}". If this is not a legal webpage to engage with, answer with "no"; this is a legal webpage to engage with ,directly provide a summary with less than 150 words.`;
+        const prompt = `Now I’m browsing a webpage with the text "${currentWebpage}" and I want to achieve the goal of "${browsingTarget}". If the "${browsingTarget}" is irrelevant to the webpage, answer with "no"; If the "${browsingTarget}" is relevant to the webpage ,only provide me a summary of the webpage with less than 150 words.`;
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
         const result = await model.generateContent(prompt);

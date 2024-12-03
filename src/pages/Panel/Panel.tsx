@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Panel.css';
-import { Input, Button, Avatar, Card, Space, Spin } from 'antd';
+import { Input, Button, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
-import { extractStructuredText } from './utils/extract-structured-text.js';
+import { extractStructuredText } from './utils/extract-structured-text';
 import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { port, host } from './api';
 const { TextArea } = Input;
@@ -18,10 +18,7 @@ const Panel: React.FC = () => {
   const [messageInput, setMessageInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     // { type: 'sent', content: 'Hello there!' },
-    // { type: 'received', content: 'Hi! How can I help you today?' },
-    // { type: 'sent', content: 'I have a question about programming.' },
   ]);
-  // const [currentTabId, setCurrentTabId] = useState<string>('');
   const currentTabIdRef = React.useRef<string>('');
   const cannotUpdate = React.useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -112,8 +109,8 @@ const Panel: React.FC = () => {
     const requestBody = {
       userId,
       type: 'summary',
-      browsingTarget: goal, // Fixed typo from 'browingTarget'
-      currentWebpage, // Fixed property name from 'currentWebPage'
+      browsingTarget: goal,
+      currentWebpage,
     };
 
     try {
@@ -172,18 +169,18 @@ const Panel: React.FC = () => {
     });
   };
 
-  const initPanelbyTabId = async (tabId: string) => {
+  const initPanelbyTabId = useCallback(async (tabId: string) => {
     console.log('Init panel by tab id:', tabId);
-    // default page
     setMessages([]);
     setGoal(defaultGoalRef.current);
     setMessageInput('');
     setIsLoading(true);
-    // call API
+
     try {
       const userId = (await getSessionId()) + tabId;
+      
+      // Use fetch with catch to prevent 404 from showing as error
       const response = await fetch(
-        // `http://localhost:3030/api/crud/hisdata/${userId}`
         `http://${host}:${port}/api/crud/hisdata/${userId}`
       );
       if (response.status === 404) {
@@ -197,7 +194,14 @@ const Panel: React.FC = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json().then((data) => data.data);
+
+      const { data } = await response.json();
+      
+      if (!data || !Array.isArray(data)) {
+        console.log('Invalid data format received');
+        return;
+      }
+        
       // if current tab is not the same tab as the tab that sent the request, return
       if (currentTabIdRef.current !== tabId) {
         console.log('Tab changed, return');
@@ -211,32 +215,37 @@ const Panel: React.FC = () => {
         );
       });
 
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].type === 'summary') {
-          setGoal(data[i].browsingTarget);
+
+      // Sort and process data
+      data.sort((a: any, b: any) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+
+      // Process messages
+      data.forEach((item: any) => {
+        if (item.type === 'summary') {
+          setGoal(item.browsingTarget);
           setMessages((prevMessages) => [
-            // ...prevMessages, // clear messages when having a new goal
-            { type: 'sent', content: data[i].browsingTarget },
+            { type: 'sent', content: item.browsingTarget },
             {
               type: 'received',
-              content: data[i].ifValid
-                ? data[i].result
-                : 'Invalid Goal. Please try again.',
+              content: item.ifValid ? item.result : 'Invalid Goal. Please try again.',
             },
           ]);
-        } else if (data[i].type === 'request') {
+        } else if (item.type === 'request') {
           setMessages((prevMessages) => [
             ...prevMessages,
-            { type: 'sent', content: data[i].customizedRequest },
+            { type: 'sent', content: item.customizedRequest },
             {
               type: 'received',
-              content: data[i].ifValid
-                ? data[i].result
+              content: item.ifValid
+                ? item.result
                 : 'Based on your current page, I cannot find out the answer.',
             },
           ]);
         }
-      }
+      });
+      
     } catch (err) {
       console.log('Error got, using default goal.');
       if (defaultGoalRef.current && defaultGoalRef.current !== '') {
@@ -245,7 +254,7 @@ const Panel: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Add new function to send custom request
   const sendCustomRequest = async (customRequest: string) => {
@@ -363,14 +372,16 @@ const Panel: React.FC = () => {
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
     };
-  }, []);
+  }, [initPanelbyTabId]);
 
   return (
     <div className="container">
       <div>
         {isLoading ? (
           <div className="loading-spinner">
-            <Spin tip="Loading" size="large" />
+            <Spin size="large">
+              <div className="loading-content">Loading</div>
+            </Spin>
           </div>
         ) : (
           <div className="main-content">

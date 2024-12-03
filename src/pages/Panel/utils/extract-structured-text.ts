@@ -1,12 +1,12 @@
-export const extractStructuredText = () => {
+export const extractStructuredText = (): string => {
   // Check if we're on a chrome:// URL
   if (window.location.protocol === 'chrome:') {
     return 'Cannot extract content from Chrome system pages.';
   }
 
-  const extractedText = new Set(); // Use Set to avoid duplicates
+  const extractedText: Set<string> = new Set(); // Use Set to avoid duplicates
   
-  const isVisible = (element) => {
+  const isVisible = (element: HTMLElement): boolean => {
     const style = window.getComputedStyle(element);
     return (
       style.display !== 'none' &&
@@ -16,11 +16,11 @@ export const extractStructuredText = () => {
     );
   };
 
-  const shouldExcludeElement = (element) => {
-    const excludedTags = ['script', 'style', 'noscript', 'iframe', 'canvas', 'svg',
+  const shouldExcludeElement = (element: HTMLElement): boolean => {
+    const excludedTags: string[] = ['script', 'style', 'noscript', 'iframe', 'canvas', 'svg',
       'audio', 'video', 'img', 'input', 'textarea', 'select', 'button', 'nav',
       'header', 'footer', 'menu', 'form'];
-    const excludedClasses = ['nav', 'footer', 'header', 'menu'];
+    const excludedClasses: string[] = ['nav', 'footer', 'header', 'menu'];
     
     return (
       excludedTags.includes(element.tagName.toLowerCase()) ||
@@ -30,7 +30,7 @@ export const extractStructuredText = () => {
     );
   };
 
-  const extractTextFromElement = (element) => {
+  const extractTextFromElement = (element: HTMLElement): void => {
     if (!isVisible(element) || shouldExcludeElement(element)) {
       return;
     }
@@ -41,12 +41,12 @@ export const extractStructuredText = () => {
     }
 
     Array.from(element.children).forEach(child => {
-      extractTextFromElement(child);
+      extractTextFromElement(child as HTMLElement);
     });
   };
 
   // Focus on elements that typically contain main content
-  const mainContentSelectors = [
+  const mainContentSelectors: string[] = [
     'article',
     'main',
     '[role="main"]',
@@ -60,7 +60,7 @@ export const extractStructuredText = () => {
   const mainElements = document.querySelectorAll(mainContentSelectors.join(','));
   
   if (mainElements.length > 0) {
-    mainElements.forEach(element => extractTextFromElement(element));
+    mainElements.forEach(element => extractTextFromElement(element as HTMLElement));
   } else {
     // Fallback to body if no main content containers found
     extractTextFromElement(document.body);

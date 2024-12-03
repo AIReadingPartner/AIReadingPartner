@@ -1,32 +1,45 @@
+:root {
+  --brand-primary: #007bff;
+  --brand-primary-dark: #0056b3;
+  --brand-primary-light: #e3f2fd;
+  --neutral-gray: #6c757d;
+  --neutral-white: #ffffff;
+  --neutral-text: #1a1a1a;
+  --neutral-border: #bec1c9;
+  --shadow-overlay: rgba(0, 0, 0, 0.08);
+  --accent-blue: #1a73e8;
+  --accent-blue-dark: #174ea6;
+  --loader-color: white;
+  --message-sent-bg: #f0f0f0;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   justify-content: space-between;
-  /* padding: 24px; */
   max-width: 900px;
   margin: 0 auto;
   min-height: 90vh;
   max-height: 100vh;
-  /* background-color: #fafafa; */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--neutral-white);
+  color: var(--neutral-text);
 }
 
 .main-content {
   display: flex;
   flex-direction: column;
-  /* min-height: 96vh;
-  max-height: 96vh; */
   height: 96vh;
   flex-grow: 1;
-  background-color: #ffffff;
+  background-color: var(--neutral-white);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px var(--shadow-overlay);
 }
 
 .section-title {
-  font-size: 22px;
+  font-size: clamp(22px, 3vw, 26px);
   font-weight: 600;
   color: #1a1a1a;
   letter-spacing: -0.5px;
@@ -43,7 +56,8 @@
   top: 0;
   bottom: 12px;
   width: 4px;
-  background: linear-gradient(to bottom, #4f46e5, #3730a3);
+  /* background: linear-gradient(to bottom, var(--accent-blue), var(--accent-blue-dark)); */
+  background: var(--brand-primary);
   border-radius: 2px;
 }
 
@@ -96,24 +110,32 @@
 .message-bubble {
   padding: 14px 18px;
   border-radius: 18px;
-  font-size: 14.5px;
+  font-size: clamp(15px, 2vw, 16.5px);
   line-height: 1.6;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  background: var(--neutral-white);
+  color: var(--neutral-text);
+  border: 1px solid var(--neutral-border);
 }
 
 .sent .message-bubble {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: white;
+  background: var(--message-sent-bg);
+  color: var(--neutral-text);
   border-top-right-radius: 4px;
   margin-right: 8px;
+  border: 1px solid var(--neutral-border);
 }
 
 .received .message-bubble {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  color: white;
+  background: var(--brand-primary-light);
+  color: var(--neutral-text);
   border-top-left-radius: 4px;
   margin-left: 8px;
+  border: 1px solid var(--neutral-border);
 }
 
 .avatar {
@@ -137,11 +159,27 @@
 }
 
 .avatar.sent {
-  background-color: #ef4444;
+  /* background: linear-gradient(135deg, #1a73e8, #174ea6); */
+  background-color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar.received {
-  background-color: #8b5cf6;
+  background: linear-gradient(135deg, #8e44ef, #4285f4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gemini-icon {
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M11.2 4L6.4 13.8 11.2 19l4.8-5.2L11.2 4zm1.6 16L7.2 13.8 12 4l4.8 9.8-4 6.2z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .input-container {
@@ -156,21 +194,21 @@
 
 .custom-textarea {
   width: 100%;
-  border: 0.8px rgba(0, 0, 0, 0.382) solid !important;
+  border: 0.8px var(--neutral-border) solid !important;
   border-radius: 14px !important;
-  padding: 14px !important;
+  padding: 16px !important;
   padding-right: 110px !important;
-  font-size: 14.5px !important;
+  font-size: clamp(15px, 2vw, 16.5px) !important;
   line-height: 1.6 !important;
-  background-color: #fafafa !important;
+  background-color: var(--neutral-white) !important;
   resize: none !important;
   transition: all 0.3s ease !important;
 }
 
 .custom-textarea:focus {
-  border-color: #3b82f6 !important;
-  background-color: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  border-color: var(--brand-primary) !important;
+  background-color: var(--neutral-white) !important;
+  box-shadow: 0 0 0 3px var(--shadow-overlay) !important;
 }
 
 .update-button,
@@ -179,19 +217,19 @@
   bottom: 10px !important;
   right: 10px !important;
   border-radius: 12px !important;
-  height: 36px !important;
-  font-size: 14.5px !important;
-  background: #3b82f6 !important;
-  border: solid 1px #3b82f6 !important;
-  color: #ffffff !important;
-  padding: 0 20px !important;
+  height: 38px !important;
+  font-size: clamp(15px, 2vw, 16.5px) !important;
+  background: var(--brand-primary);
+  border: solid 1px var(--brand-primary);
+  color: var(--neutral-white);
+  padding: 0 24px !important;
   transition: all 0.3s ease !important;
   font-weight: 500 !important;
 }
 
 .update-button:hover:not(:disabled),
 .send-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  background: linear-gradient(135deg, var(--brand-primary-dark), #004085);
   transform: translateY(-1px);
 }
 
@@ -199,8 +237,9 @@
 .send-button:disabled {
   opacity: 0.6 !important;
   cursor: not-allowed !important;
-  background: #808080 !important;
-  border-color: #808080 !important;
+  background: #808080;
+  border-color: #808080;
+  color: #ffffff;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -211,17 +250,17 @@
 }
 
 .messages-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--brand-primary-light);
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--neutral-border);
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--neutral-gray);
 }
 
 .sent .message-bubble,
@@ -229,11 +268,11 @@
   /* Update the Spin component styles */
   :where(.css-dev-only-do-not-override-xu9wm8).ant-spin,
   :where(.css-dev-only-do-not-override-xu9wm8).ant-spin .ant-spin-dot-item {
-    color: white !important;
+    color: var(--loader-color) !important;
   }
   
   .ant-spin-dot-item {
-    background-color: white !important;
+    background-color: var(--brand-primary-dark);
   }
 }
 

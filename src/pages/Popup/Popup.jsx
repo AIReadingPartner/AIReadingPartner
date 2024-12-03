@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import logo from '../../assets/img/logo.svg';
 import Greetings from '../../containers/Greetings/Greetings';
 import './Popup.css';
+import config from '../../config';
 
 const Popup = () => {
   const [data, setData] = useState(''); 
@@ -10,9 +11,8 @@ const Popup = () => {
   // example click handler to fetch data from server
   const testSummary = async () => {
     try {
-      //const response = await fetch('http://localhost:3030/api/task/task1');
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/pageSummarize', {
+      const response = await fetch(`${config.API_URL}/task/pageSummarize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const Popup = () => {
     console.log("request testing")
     try {
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/customizedReq', {
+      const response = await fetch(`${config.API_URL}/task/customizedReq`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ const Popup = () => {
     console.log("request testing")
     try {
       const data = { userId:"123", browsingTarget:"123", currentWebpage:"123", type:"123" };
-      const response = await fetch('http://localhost:3030/api/task/sentenceExplain', {
+      const response = await fetch(`${config.API_URL}/task/sentenceExplain`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const Popup = () => {
   const testGetAllHistory = async () => {
     console.log("GetAllHistory testing")
     try {
-      const response = await fetch('http://localhost:3030/api/crud//hisdata/1', {
+      const response = await fetch(`${config.API_URL}/crud//hisdata/1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

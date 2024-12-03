@@ -1,5 +1,6 @@
 import { Button, Tooltip } from 'antd';
 import React, { useState, useEffect } from 'react';
+import config from '..//config';
 
 interface UpdateSummaryButtonProps {
   goal: string;
@@ -74,7 +75,7 @@ export const UpdateSummaryButton: React.FC<UpdateSummaryButtonProps> = ({
         // console.log('Contents:', contents);
         if (structuredData.length > 0) {
           const backendResponse = await fetch(
-            'http://localhost:3030/api/task/highlightSentence',
+            `${config.API_URL}/task/highlightSentence`,
             {
               method: 'POST',
               headers: {

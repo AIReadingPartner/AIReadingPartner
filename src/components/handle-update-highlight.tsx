@@ -1,3 +1,4 @@
+import config from '..//config';
 export interface StructuredText {
   tag: string; // HTML tag of the element, "section"
   content: string; // Visible text content, "This is section 1."
@@ -5,6 +6,7 @@ export interface StructuredText {
   className: string | null; // Element's class (if any), "main-section"
   index: number; // Index of the element within its type, 0
 }
+// console.log('Current API URL:', config.API_URL);
 
 const sendMessageToTab = (tabId: number, message: any): Promise<any> => {
   return new Promise((resolve, reject) => {
@@ -45,14 +47,9 @@ export const handleUpdateHighlight = async (goal: string) => {
       const structuredData = response.structuredData;
       console.log('Response: ', response);
       console.log('Structured Data:', structuredData);
-      // // a string containing all the content of the page
-      // const contents = structuredData
-      //   .map((data: StructuredText) => data.content)
-      //   .join(' ');
-      // console.log('Contents:', contents);
       if (structuredData.length > 0) {
         const backendResponse = await fetch(
-          'http://localhost:3030/api/task/highlightSentence',
+          `${config.API_URL}/task/highlightSentence`,
           {
             method: 'POST',
             headers: {
@@ -65,6 +62,7 @@ export const handleUpdateHighlight = async (goal: string) => {
           }
         );
         if (!backendResponse.ok) {
+          console.log('Backend Response:', backendResponse);
           throw new Error(`HTTP error! status: ${backendResponse.status}`);
         }
         const responseData = await backendResponse.json();
@@ -88,5 +86,7 @@ export const handleUpdateHighlight = async (goal: string) => {
     }
   } catch (error) {
     console.error('Error:', error);
+    console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
   }
 };

@@ -6,6 +6,7 @@ import { extractStructuredText } from './utils/extract-structured-text';
 import { handleUpdateHighlight } from '../../components/handle-update-highlight';
 import { port, host } from './api';
 const { TextArea } = Input;
+import config from '../../config';
 
 interface Message {
   type: 'sent' | 'received';
@@ -118,8 +119,7 @@ const Panel: React.FC = () => {
       defaultGoalRef.current = goal;
 
       const response = await fetch(
-        // 'http://localhost:3030/api/task/pageSummarize',
-        `http://${host}:${port}/api/task/pageSummarize`,
+        `${config.API_URL}/task/pageSummarize`,
         {
           method: 'POST',
           headers: {
@@ -175,13 +175,14 @@ const Panel: React.FC = () => {
     setGoal(defaultGoalRef.current);
     setMessageInput('');
     setIsLoading(true);
-
+    // call API
+    console.log(config.API_URL);
     try {
       const userId = (await getSessionId()) + tabId;
       
       // Use fetch with catch to prevent 404 from showing as error
       const response = await fetch(
-        `http://${host}:${port}/api/crud/hisdata/${userId}`
+        `${config.API_URL}/crud/hisdata/${userId}`
       );
       if (response.status === 404) {
         console.log('No data found for ' + tabId + ', using default goal: ' + defaultGoalRef.current);
@@ -279,7 +280,7 @@ const Panel: React.FC = () => {
       };
 
       const response = await fetch(
-        // 'http://localhost:3030/api/task/customizedReq',
+        // `${config.API_URL}/task/customizedReq',
         `http://${host}:${port}/api/task/customizedReq`,
         {
           method: 'POST',

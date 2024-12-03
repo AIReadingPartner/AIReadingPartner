@@ -54,3 +54,4 @@ var server = new WebpackDevServer(
 (async () => {
   await server.start();
 })();
+console.log(`Starting server on http://localhost:${env.PORT}`);

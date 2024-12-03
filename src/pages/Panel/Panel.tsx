@@ -4,7 +4,6 @@ import { Input, Button, Spin } from 'antd';
 import { UserOutlined, DesktopOutlined } from '@ant-design/icons';
 import { extractStructuredText } from './utils/extract-structured-text';
 import { handleUpdateHighlight } from '../../components/handle-update-highlight';
-import { port, host } from './api';
 const { TextArea } = Input;
 import config from '../../config';
 
@@ -280,8 +279,7 @@ const Panel: React.FC = () => {
       };
 
       const response = await fetch(
-        // `${config.API_URL}/task/customizedReq',
-        `http://${host}:${port}/api/task/customizedReq`,
+        `${config.API_URL}/task/customizedReq`,
         {
           method: 'POST',
           headers: {

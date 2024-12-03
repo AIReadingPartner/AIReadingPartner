@@ -32,19 +32,23 @@ export const extractStructuredText = () => {
     }
 
     const text = element.innerText ? element.innerText.trim() : ''; // Get visible text content
-    // Check if the text contains any word characters (letters or digits) and meets minimum length
-    const hasWords = /\w/.test(text);
-    const minLength = 5; // Minimum length of text to be included
-    const wordCount = text.split(/\s+/).length; // Count the number of words
-    if (text && hasWords && text.length >= minLength && wordCount > 1) {
-      sections.push({
-        tag: element.tagName.toLowerCase(),
-        content: text,
-        id: element.id || null,
-        className: element.className || null,
-        index: indexCounter++, // Assign a unique index number
-      });
-    }
+    const lines = text.split('\n'); // Split text by newline characters
+
+    lines.forEach((line) => {
+      // Check if the line contains any word characters (letters or digits) and meets minimum length
+      const hasWords = /\w/.test(line);
+      const minLength = 5; // Minimum length of text to be included
+      const wordCount = line.split(/\s+/).length; // Count the number of words
+      if (line && hasWords && line.length >= minLength && wordCount > 1) {
+        sections.push({
+          tag: element.tagName.toLowerCase(),
+          content: line,
+          id: element.id || null,
+          className: element.className || null,
+          index: indexCounter++, // Assign a unique index number
+        });
+      }
+    });
 
     // Recursively extract text from child elements
     Array.from(element.children).forEach((child) => {

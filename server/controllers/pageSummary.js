@@ -45,3 +45,36 @@ exports.pageSummarize = async (req, res) => {
         res.status(500).json({ message: 'Error processing Page Summary', error: error.message });
     }
 };
+
+exports.saveSummary = async (req, res) => {
+    try {
+        const { userId, type, result ,browsingTarget, currentWebpage } = req.body;
+
+        if (!userId || !browsingTarget || !result || !currentWebpage || !type) {
+            return res.status(400).json({ message: 'Missing required fields in request body' });
+        }
+
+        console.log("save summary called successfully");
+
+        const geminiRequest = new GeminiReq({
+            userId,
+            type,
+            browsingTarget,
+            currentWebpage,
+            result,
+            ifValid: true,
+        });
+
+        await geminiRequest.save();
+        console.log("db saved: " + geminiRequest)
+
+
+        res.json({
+            message: 'Page Summary processed successfully and data stored in MongoDB',
+            data: geminiRequest,
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: 'Error processing Page Summary', error: error.message });
+    }
+}

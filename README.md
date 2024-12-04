@@ -1,6 +1,21 @@
-# AIReadingPartner
+# AI Reading Partner
 
-# Setup Instructions
+## Key Features
+
+- **Goal-Driven Browsing**  
+  Define a specific browsing goal for each session. Whether it’s a targeted task (e.g., "Find job postings matching my skills") or broad exploration (e.g., "Learn about renewable energy trends"), the tool tailors its assistance to your needs.
+
+- **Page Analysis and Summaries**  
+  Leverage built-in summarization APIs and Gemini to analyze visited pages. Receive concise summaries that are directly aligned with your browsing goals.
+
+- **Highlighted Core Sentences**  
+  AI-powered by Gemini highlights the most relevant content on each page, making it easier for you to focus on what truly matters.
+
+- **Conversational Follow-Up Questions**  
+  Engage with the tool using natural, conversational language. Ask follow-up questions to dive deeper, clarify details, or refine your understanding of the information presented.
+
+
+## Setup Instructions
 
 ### Clone the Repository and Run Locally
 
@@ -40,12 +55,6 @@
 The deployed version of the server is already connected to the plugin.
 
 
-## Highlight
-
-The AI Reading Partner extension includes a feature to highlight specific text on a webpage.
-
-Click the "Update" button to trigger the highlight functionality. This button will clear any existing highlights, extract the structured text from the webpage, and apply new highlights based on the specified criteria.
-
-# Acknowledgements
+## Acknowledgements
 
 Created from boilerplate https://github.com/lxieyang/chrome-extension-boilerplate-react

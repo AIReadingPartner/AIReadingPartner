@@ -7,12 +7,13 @@
 
 - **Page Analysis and Summaries**  
   Leverage built-in summarization APIs and Gemini to analyze visited pages. Receive concise summaries that are directly aligned with your browsing goals.
-
+![alt text](https://github.com/AIReadingPartner/AIReadingPartner/blob/main/imgs/summary.png?raw=true)
 - **Highlighted Core Sentences**  
   AI-powered by Gemini highlights the most relevant content on each page, making it easier for you to focus on what truly matters.
-
+![alt text](https://github.com/AIReadingPartner/AIReadingPartner/blob/main/imgs/highlight.png?raw=true)
 - **Conversational Follow-Up Questions**  
   Engage with the tool using natural, conversational language. Ask follow-up questions to dive deeper, clarify details, or refine your understanding of the information presented.
+![alt text](https://github.com/AIReadingPartner/AIReadingPartner/blob/main/imgs/askmore.png?raw=true)
 
 
 ## Setup Instructions

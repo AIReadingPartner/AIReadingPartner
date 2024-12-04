@@ -17,6 +17,20 @@
 
 ## Setup Instructions
 
+### Using the Chrome Plugin
+
+- **Load Unpacked Plugin**  
+  1. Go to Chrome's Extensions page (`chrome://extensions/`).  
+  2. Enable *Developer Mode* (toggle in the top-right corner).  
+  3. Click on *Load Unpacked* and select the `build` directory as the target.
+
+- **Prebuilt Plugin**  
+  If you want to use the plugin easily without running the client locally:  
+  1. Use the zipped plugin resource available in the repository.  
+  2. Load the zipped plugin into Chrome from the Extensions page.  
+
+The deployed version of the server is already connected to the plugin.
+
 ### Clone the Repository and Run Locally
 
 1. **Client Setup**  
@@ -39,22 +53,7 @@
    MONGO_URI=your_mongo_db_connection_string
    GEMINI_KEY=your_gemini_api_key
    ```
-
-### Using the Chrome Plugin
-
-- **Load Unpacked Plugin**  
-  1. Go to Chrome's Extensions page (`chrome://extensions/`).  
-  2. Enable *Developer Mode* (toggle in the top-right corner).  
-  3. Click on *Load Unpacked* and select the `build` directory as the target.
-
-- **Prebuilt Plugin**  
-  If you want to use the plugin easily without running the client locally:  
-  1. Use the zipped plugin resource available in the repository.  
-  2. Load the zipped plugin into Chrome from the Extensions page.  
-
-The deployed version of the server is already connected to the plugin.
-
-
+   
 ## Acknowledgements
 
 Created from boilerplate https://github.com/lxieyang/chrome-extension-boilerplate-react

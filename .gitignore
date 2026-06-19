@@ -24,3 +24,6 @@
 # secrets
 secrets.*.js
 .env
+*.key
+*.crt
+*.pem

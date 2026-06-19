@@ -24,7 +24,9 @@ exports.pageSummarize = async (req, res) => {
     const embed = req.app.locals.ragEmbed || defaultEmbed;
     const generate = req.app.locals.ragGenerate || defaultGenerate;
 
-    // currentWebpage carries the page URL (the ingestion key).
+    // Phase 1 contract: currentWebpage must be the page URL used as the ingestion
+    // key (the same `url` passed to /api/task/ingest). Phase 3 client wiring must
+    // send the URL here, not the page text, and call /ingest before summarizing.
     const { context, citations } = await retrieveContext({
       store, embed, userId, url: currentWebpage, query: browsingTarget, k: 5,
     });

@@ -6,7 +6,10 @@ const { getStore } = require('../rag');
 const { embed: defaultEmbed } = require('../rag/embeddings');
 
 const GEMINI_KEY = process.env.GEMINI_KEY;
-const MIN_SCORE = process.env.RAG_MIN_SCORE ? Number(process.env.RAG_MIN_SCORE) : 0.5;
+// Raw-cosine relevance floor (both stores report raw cosine in [-1,1]). Tuned
+// conservatively for text-embedding-004: relevant passages typically score
+// ~0.5-0.8, clearly off-topic ~0.3 or below. Override with RAG_MIN_SCORE.
+const MIN_SCORE = process.env.RAG_MIN_SCORE ? Number(process.env.RAG_MIN_SCORE) : 0.4;
 const MAX_STEPS = 5;
 
 const SYSTEM_INSTRUCTION =

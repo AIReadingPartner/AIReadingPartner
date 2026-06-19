@@ -10,10 +10,12 @@ const getStore = () => {
   return _memo;
 };
 
-// Embed the query, retrieve top-k, and format grounded context + citation indices.
-const retrieveContext = async ({ store, embed: embedFn = embed, userId, url, query, k = 5 }) => {
+// Embed the query, retrieve top-k, drop hits below minScore, and format
+// grounded context + citation indices.
+const retrieveContext = async ({ store, embed: embedFn = embed, userId, url, query, k = 5, minScore = 0 }) => {
   const [queryVector] = await embedFn([query]);
-  const hits = await store.retrieve(userId, url, queryVector, k);
+  const allHits = await store.retrieve(userId, url, queryVector, k);
+  const hits = allHits.filter((h) => h.score >= minScore);
   const context = hits.map((h) => `[${h.index}] ${h.content}`).join('\n');
   const citations = hits.map((h) => h.index);
   return { context, citations, hits };

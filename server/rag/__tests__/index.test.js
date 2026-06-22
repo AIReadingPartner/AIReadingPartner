@@ -35,3 +35,18 @@ test('retrieveContext returns empty when nothing indexed', async () => {
   expect(citations).toEqual([]);
   expect(context).toBe('');
 });
+
+test('retrieveContext drops hits below minScore', async () => {
+  const store = createMemoryStore();
+  await store.upsert('u1', 'http://x',
+    [{ index: 0, content: 'on topic' }, { index: 1, content: 'off topic' }],
+    [[1, 0], [0, 1]]);
+  const embed = async () => [[1, 0]]; // scores: index0=1.0, index1=0.0
+
+  const { citations, context } = await retrieveContext({
+    store, embed, userId: 'u1', url: 'http://x', query: 'q', k: 5, minScore: 0.5,
+  });
+
+  expect(citations).toEqual([0]);
+  expect(context).toBe('[0] on topic');
+});

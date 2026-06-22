@@ -25,22 +25,47 @@ const defaultGenerate = async (prompt) => {
   return result.response.text().trim();
 };
 
+const defaultAnalyzeImage = async (prompt, image) => {
+  const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const result = await model.generateContent([
+    { inlineData: { mimeType: image.mimeType, data: image.data } },
+    { text: prompt },
+  ]);
+  return result.response.text().trim();
+};
+
+// Validate an optional attached image payload.
+const isValidImage = (image) =>
+  image &&
+  typeof image.mimeType === 'string' &&
+  image.mimeType.startsWith('image/') &&
+  typeof image.data === 'string' &&
+  image.data.length > 0;
+
 exports.agent = async (req, res) => {
   try {
-    const { userId, url, goal, question } = req.body;
+    const { userId, url, goal, question, image } = req.body;
     if (!userId || !url || (!goal && !question)) {
       return res.status(400).json({ message: 'Missing required fields: userId, url, and goal or question' });
+    }
+    if (image !== undefined && !isValidImage(image)) {
+      return res.status(400).json({ message: 'Invalid image: expected { mimeType: "image/*", data: <base64> }' });
     }
 
     const store = req.app.locals.ragStore || getStore();
     const embed = req.app.locals.ragEmbed || defaultEmbed;
     const generate = req.app.locals.ragGenerate || defaultGenerate;
+    const analyzeImageFn = req.app.locals.ragAnalyzeImage || defaultAnalyzeImage;
 
-    const { declarations, handlers } = createTools({ userId, url, store, embed, generate, minScore: MIN_SCORE });
+    const { declarations, handlers } = createTools({
+      userId, url, store, embed, generate, analyzeImageFn, image, minScore: MIN_SCORE,
+    });
     const chat = req.app.locals.agentChat ||
       createGeminiChat({ apiKey: GEMINI_KEY, systemInstruction: SYSTEM_INSTRUCTION, declarations });
 
-    const userTurn = `Goal: ${goal || '(none)'}\nQuestion: ${question || '(none)'}`;
+    const imageNote = image ? '\n(A screenshot of the page is attached; use analyzeImage for visual questions.)' : '';
+    const userTurn = `Goal: ${goal || '(none)'}\nQuestion: ${question || '(none)'}${imageNote}`;
     const out = await runAgent({ chat, handlers, userTurn, maxSteps: MAX_STEPS });
 
     res.json({ message: 'Agent run complete', ...out });

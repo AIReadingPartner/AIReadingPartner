@@ -54,3 +54,25 @@ test('highlightRelevant returns chunk indices', async () => {
   const out = await handlers.highlightRelevant({ goal: 'flood' });
   expect(out.indices).toEqual([2]);
 });
+
+test('analyzeImage tool is absent when no image is attached', () => {
+  const { declarations, handlers } = createTools({ userId: 'u1', url: 'http://x' });
+  expect(declarations.map((d) => d.name)).not.toContain('analyzeImage');
+  expect(handlers.analyzeImage).toBeUndefined();
+});
+
+test('analyzeImage tool is present and calls the vision fn when an image is attached', async () => {
+  const image = { mimeType: 'image/png', data: 'BASE64' };
+  const analyzeImageFn = jest.fn(async () => 'A bar chart of revenue.');
+  const { declarations, handlers } = createTools({
+    userId: 'u1', url: 'http://x', image, analyzeImageFn,
+  });
+
+  expect(declarations.map((d) => d.name)).toContain('analyzeImage');
+
+  const out = await handlers.analyzeImage({ prompt: 'what does the chart show?' });
+  expect(analyzeImageFn).toHaveBeenCalledWith('what does the chart show?', image);
+  expect(out.result).toBe('A bar chart of revenue.');
+  expect(out.source).toBe('vision');
+  expect(out.citations).toBeUndefined();
+});

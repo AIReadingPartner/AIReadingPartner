@@ -40,10 +40,21 @@ const declarations = [
   },
 ];
 
+const visionDeclaration = {
+  name: 'analyzeImage',
+  description: 'Analyze the attached screenshot of the page to answer visual questions ' +
+    '(charts, diagrams, images, layout). Use this when the question is about visuals rather than text.',
+  parameters: {
+    type: 'object',
+    properties: { prompt: { type: 'string', description: 'What to look for in the image' } },
+    required: ['prompt'],
+  },
+};
+
 const NO_CONTENT = 'no relevant content found on this page';
 
 // Bind (userId,url) + RAG deps into concrete tool handlers.
-const createTools = ({ userId, url, store, embed, generate, k = 5, minScore = 0 }) => {
+const createTools = ({ userId, url, store, embed, generate, analyzeImageFn, image, k = 5, minScore = 0 }) => {
   const ctx = (query) => retrieveContext({ store, embed, userId, url, query, k, minScore });
 
   const handlers = {
@@ -76,7 +87,16 @@ const createTools = ({ userId, url, store, embed, generate, k = 5, minScore = 0 
     },
   };
 
-  return { declarations, handlers };
+  const toolDeclarations = [...declarations];
+  if (image) {
+    toolDeclarations.push(visionDeclaration);
+    handlers.analyzeImage = async ({ prompt }) => {
+      const result = await analyzeImageFn(prompt, image);
+      return { result, source: 'vision' };
+    };
+  }
+
+  return { declarations: toolDeclarations, handlers };
 };
 
 module.exports = { createTools, declarations };

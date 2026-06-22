@@ -3,7 +3,10 @@
   "name": "AI Reading Partner",
   "description": "A chrome extension that helps you read. ADHD friendly.",
   "options_page": "options.html",
-  "background": { "service_worker": "background.bundle.js" },
+  "background": {
+     "service_worker": "background.bundle.js",
+     "trial_tokens": ["Av/vvbjccducCTlzCHV+KZ113NHABOnD/boKYEfdZ7ZNEvpYZdgWmgJDqW+esdGcH0uougdO2WguYUSlg3Mnzw8AAABzeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vcGttZWJuYXBka21mY2FrY29oYm9tb2JtbWtjaW9mZmoiLCJmZWF0dXJlIjoiQUlTdW1tYXJpemF0aW9uQVBJIiwiZXhwaXJ5IjoxNzUzMTQyNDAwfQ=="]
+    },
   "action": {
     "default_icon": "icon-34.png"
   },
@@ -36,6 +39,8 @@
     "<all_urls>"
   ],
   "side_panel": {
-    "default_path": "panel.html"
+    "default_path": "panel.html",
+    "trial_tokens": ["Av/vvbjccducCTlzCHV+KZ113NHABOnD/boKYEfdZ7ZNEvpYZdgWmgJDqW+esdGcH0uougdO2WguYUSlg3Mnzw8AAABzeyJvcmlnaW4iOiJjaHJvbWUtZXh0ZW5zaW9uOi8vcGttZWJuYXBka21mY2FrY29oYm9tb2JtbWtjaW9mZmoiLCJmZWF0dXJlIjoiQUlTdW1tYXJpemF0aW9uQVBJIiwiZXhwaXJ5IjoxNzUzMTQyNDAwfQ=="]
+
   }
 }

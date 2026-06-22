@@ -117,35 +117,91 @@ const Panel: React.FC = () => {
       // Update default goal
       defaultGoalRef.current = goal;
 
-      const response = await fetch(
-        `${config.API_URL}/task/pageSummarize`,
-        {
+      const available = (await self.ai.summarizer.capabilities()).available;
+
+      console.log('Summarizer API availability:', available);
+
+      if (available === 'no') {
+        receivedMessage(
+          'Summarizer built-in API is not available. Calling gemini backend...'
+        );
+        // Call our deployed backend
+        const response = await fetch(`${config.API_URL}/task/pageSummarize`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+        console.log('Received data with deployed gemini', data);
+        if (!data.data.ifValid) {
+          receivedMessage('Invalid Goal. Please try again.');
+          defaultGoalRef.current = '';
+        }
+        else if (sessionId + currentTabIdRef.current === requestBody.userId) {
+          receivedMessage(data.data.result);
+        }
+        
+      } else {
+        const options = {
+          sharedContext: defaultGoalRef.current || 'help me summarize this',
+          type: 'key-points',
+          format: 'plain-text',
+          length: 'short',
+        };
+
+        let summarizer;
+        if (available === 'readily') {
+          // API model downloaded
+          summarizer = await self.ai.summarizer.create(options);
+        } else {
+          // API model needs to be downloaded
+          summarizer = await self.ai.summarizer.create(options);
+          summarizer.addEventListener('downloadprogress', (e) => {
+            console.log(`Download progress: ${e.loaded}/${e.total}`);
+          });
+          await summarizer.ready;
+        }
+
+        const result = await summarizer.summarize(requestBody.currentWebpage);
+        console.log('Received summary result:', result);
+
+        
+
+        if (!result || !result.trim()) {
+          receivedMessage('Invalid Goal. Please try again.');
+          defaultGoalRef.current = '';
+        } else {
+          const summaryToSave = {
+            userId,
+            type: 'summary',
+            result: result,
+            browsingTarget: defaultGoalRef.current,
+            currentWebpage,
+          };
+            const response = await fetch(
+              `${config.API_URL}/task/saveSummary`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(summaryToSave),
+              }
+            );
+          if (sessionId + currentTabIdRef.current === requestBody.userId) {
+            receivedMessage(result);
+          }
+        }
       }
-
-      const data = await response.json();
-      // console.log(data);
-
-      // Updated to match API response structure
-      if (!data.data.ifValid) {
-        receivedMessage('Invalid Goal. Please try again.');
-        defaultGoalRef.current = '';
-      } else if (sessionId + currentTabIdRef.current === data.data.userId) {
-        console.log('Received message:', data.data.result);
-        receivedMessage(data.data.result);
-      }
-
     } catch (err) {
-      console.log(err);
+      console.error('Error:', err);
       receivedMessage('Error processing your request. Please try again.');
     } finally {
       cannotUpdate.current = false;
@@ -178,13 +234,16 @@ const Panel: React.FC = () => {
     console.log(config.API_URL);
     try {
       const userId = (await getSessionId()) + tabId;
-      
+
       // Use fetch with catch to prevent 404 from showing as error
-      const response = await fetch(
-        `${config.API_URL}/crud/hisdata/${userId}`
-      );
+      const response = await fetch(`${config.API_URL}/crud/hisdata/${userId}`);
       if (response.status === 404) {
-        console.log('No data found for ' + tabId + ', using default goal: ' + defaultGoalRef.current);
+        console.log(
+          'No data found for ' +
+            tabId +
+            ', using default goal: ' +
+            defaultGoalRef.current
+        );
         if (defaultGoalRef.current && defaultGoalRef.current !== '') {
           sendGoal(defaultGoalRef.current);
         }
@@ -194,14 +253,13 @@ const Panel: React.FC = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-
       const { data } = await response.json();
-      
+
       if (!data || !Array.isArray(data)) {
         console.log('Invalid data format received');
         return;
       }
-        
+
       // if current tab is not the same tab as the tab that sent the request, return
       if (currentTabIdRef.current !== tabId) {
         console.log('Tab changed, return');
@@ -215,10 +273,10 @@ const Panel: React.FC = () => {
         );
       });
 
-
       // Sort and process data
-      data.sort((a: any, b: any) => 
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      data.sort(
+        (a: any, b: any) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
 
       // Process messages
@@ -229,7 +287,9 @@ const Panel: React.FC = () => {
             { type: 'sent', content: item.browsingTarget },
             {
               type: 'received',
-              content: item.ifValid ? item.result : 'Invalid Goal. Please try again.',
+              content: item.ifValid
+                ? item.result
+                : 'Invalid Goal. Please try again.',
             },
           ]);
         } else if (item.type === 'request') {
@@ -245,7 +305,6 @@ const Panel: React.FC = () => {
           ]);
         }
       });
-      
     } catch (err) {
       console.log('Error got, using default goal.');
       if (defaultGoalRef.current && defaultGoalRef.current !== '') {
@@ -278,16 +337,13 @@ const Panel: React.FC = () => {
         customizedRequest: customRequest,
       };
 
-      const response = await fetch(
-        `${config.API_URL}/task/customizedReq`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${config.API_URL}/task/customizedReq`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

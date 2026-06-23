@@ -17,11 +17,11 @@ exports.highlightSentence = async (req, res) => {
     const inputText = structuredData
       .map((data) => `${data.index}: ${data.content}`)
       .join('\n');
-    const prompt = `Analyze the following text to identify the most relevant sentences based on the browsing target: "${browsingTarget}". Return only the indices of the most relevant sentences, separated by commas.
+    const prompt = `Analyze the following text to identify the most relevant sentences based on the browsing target: "${browsingTarget}". Return only the indices of the 3 most relevant sentences, separated by commas, ordered by relevance.
 
 Text:
 ${inputText}`
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
     const result = await model.generateContent(prompt);
 
     const responseText = result.response.text();
@@ -39,6 +39,8 @@ ${inputText}`
     });
 
     console.log(relevantIndices);
+    const textToHighlight =  structuredData.filter((data, index) => relevantIndices.includes(index));
+    console.log("Text to highlight:", textToHighlight);
     res.json({
       message: 'Task 4 processed successfully',
       result: relevantIndices,

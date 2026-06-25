@@ -1,4 +1,5 @@
 # AI Reading Partner
+https://devpost.com/software/ai-reading-partner 
 
 ## Key Features
 
